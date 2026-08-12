@@ -1,0 +1,158 @@
+/* ================= TOKENS ================= */
+:root{
+  --matcha:#0F4D25;             /* hover bg (deep green) */
+  --matcha-600:#0c3f1f;         /* active bg */
+  --gold:#F4C20D;               /* hover text yellow */
+  --ink:#0f1a1a;                /* base ink */
+  --muted:#2e4238;              /* description ink */
+  --line:#088421;               /* soft greenish border */
+
+  --card-radius:14px;
+  --card-padding:22px;
+  --card-padding-lg:26px;
+  --card-min-h:180px;
+  --card-min-h-lg:220px;
+
+  --shadow-1: 0 1px 2px rgba(16,24,40,0.06);
+  --shadow-2: 0 10px 20px rgba(16,24,40,0.12);
+}
+
+/* =========================================================
+   BASE CARD (applies to both .dashboard-card and .card-surface)
+   ========================================================= */
+.dashboard-card,
+.card-surface {
+  position: relative;
+  border-radius: var(--card-radius);
+  background: #fff;
+  padding: var(--card-padding);
+  min-height: var(--card-min-h);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  border: 2px solid var(--line);      /* green outline like your reference */
+  box-shadow: var(--shadow-1);
+  transition:
+    transform .2s ease,
+    box-shadow .2s ease,
+    border-color .2s ease,
+    background-color .2s ease,
+    color .2s ease;
+  isolation: isolate;
+
+  /* 🔒 Force left alignment even if a parent set text-align:center */
+  text-align: left !important;
+}
+
+/* Keep optional leading icon support on ::before, but allow the shared
+   system-wide card accent on ::after from ThemeTokens.css. */
+.dashboard-card::before,
+.card-surface::before {
+  content: none !important;
+}
+
+/* =========================================================
+   TYPOGRAPHY (force left alignment & consistent spacing)
+   ========================================================= */
+.card-title {
+  color: var(--matcha);               /* deep green heading */
+  font-weight: 900;
+  font-size: 20px;
+  margin: 0;                          /* no extra gaps above/below */
+  line-height: 1.2;
+  text-align: left !important;        /* beat inherited center */
+}
+.card-desc {
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.45;
+  margin: 6px 0 0;
+  text-align: left !important;        /* beat inherited center */
+}
+
+/* =========================================================
+   ALIGNMENT FIX for optional icon flags (e.g., card--user)
+   Both title & desc share the same left start.
+   ========================================================= */
+.dashboard-card { --icon-size: 0px; --icon-gap: 0px; }
+.card-surface   { --icon-size: 0px; --icon-gap: 0px; }
+
+/* If you later add icon classes, we position the icon absolutely
+   so it doesn't push the flow, then pad BOTH title and desc equally. */
+.dashboard-card[class*="card--"] .card-title::before,
+.card-surface[class*="card--"] .card-title::before {
+  content: "";
+  position: absolute;
+  left: var(--card-padding);
+  top: var(--card-padding);
+  width: var(--icon-size);
+  height: var(--icon-size);
+  border-radius: 10px;
+  background: #eaf4ea;                 /* soft disc (add mask-image if needed) */
+}
+
+.dashboard-card[class*="card--"] .card-title,
+.dashboard-card[class*="card--"] .card-desc,
+.card-surface[class*="card--"] .card-title,
+.card-surface[class*="card--"] .card-desc {
+  padding-left: calc(var(--icon-size) + var(--icon-gap));
+}
+
+/* =========================================================
+   INTERACTIONS — Hover = green background + yellow text
+   ========================================================= */
+.dashboard-card:hover,
+.dashboard-card:focus-within,
+.card-surface:hover,
+.card-surface:focus-within {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-2);
+  background-color: var(--matcha) !important;   /* 💚 green on hover */
+  border-color: var(--matcha) !important;
+  color: var(--gold) !important;                /* 🟨 base text yellow */
+}
+
+/* Ensure inner text flips to gold too */
+.dashboard-card:hover .card-title,
+.dashboard-card:hover .card-desc,
+.dashboard-card:focus-within .card-title,
+.dashboard-card:focus-within .card-desc,
+.card-surface:hover .card-title,
+.card-surface:hover .card-desc,
+.card-surface:focus-within .card-title,
+.card-surface:focus-within .card-desc {
+  color: var(--gold) !important;
+}
+
+/* Active press */
+.dashboard-card:active,
+.card-surface:active {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-1);
+  background-color: var(--matcha-600) !important;
+  border-color: var(--matcha-600) !important;
+}
+
+/* Disabled */
+.dashboard-card.disabled,
+.card-surface.disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
+/* Keyboard focus */
+.dashboard-card:focus-visible,
+.card-surface:focus-visible {
+  outline: 3px solid #93c5fd;
+  outline-offset: 3px;
+}
+
+/* Larger on wide screens */
+@media (min-width: 1200px) {
+  .dashboard-card,
+  .card-surface {
+    padding: var(--card-padding-lg);
+    min-height: var(--card-min-h-lg);
+  }
+}

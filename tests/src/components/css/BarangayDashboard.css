@@ -1,0 +1,172 @@
+/* ------------------ Sizing knobs (same as AdminDashboard) ------------------ */
+:root {
+  --card-padding: 22px;
+  --card-padding-lg: 26px;
+
+  --card-min-h: 180px;
+  --card-min-h-lg: 220px;
+
+  --card-gap: 20px;
+  --card-gap-lg: 24px;
+
+  /* Gold theme */
+  --gold-500: #F4C20D;         /* gold fill / accents */
+  --gold-600: #D4A90B;         /* darker gold outline */
+  --gold-text: #F4C20D;        /* GOLD text color on hover */
+
+  /* Page background (unify to remove bottom band) */
+  --page-bg: #f7f9fc;
+}
+
+/* ------------------ PAGE BG — remove bottom band ------------------ */
+html, body, #root { height: 100%; margin: 0; background: var(--page-bg); }
+.admin-wrapper {
+  background: var(--page-bg);
+  min-height: 100dvh; /* fill entire viewport */
+}
+
+/* centers content and limits max width (Admin parity) */
+.admin-container {
+  max-width: 1580px;
+  margin: 0 auto;
+  padding: 28px;
+  box-sizing: border-box;
+}
+
+/* ------------------ Title ------------------ */
+.admin-title {
+  font-size: 18px;
+  color: #334155;
+  font-weight: 600;
+  margin: 8px 0 20px 0;
+}
+
+/* ------------------ GRID (3 columns on desktop) ------------------ */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--card-gap);
+}
+
+/* Tablet */
+@media (max-width: 1100px) {
+  .cards-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+  .admin-container { padding: 18px; }
+  .cards-grid { grid-template-columns: 1fr; }
+}
+
+/* ------------------ CARD SURFACE (Admin-sized) ------------------ */
+.card-surface {
+  background: #fff;
+  border-radius: 12px;
+  padding: var(--card-padding);
+  border: 1px solid #005109;        /* ✅ keep your green baseline border */
+  box-shadow: 0 1px 0 rgba(0,0,0,0.02);
+
+  min-height: var(--card-min-h);
+  cursor: pointer;
+
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  transition:
+    transform .15s ease,
+    box-shadow .15s ease,
+    border-color .15s ease,
+    background-color .15s ease,
+    color .15s ease;
+}
+
+/* ------------------ HOVER ------------------
+   If you want gold FILL + gold text, keep background line below.
+   If you want white fill + gold text only, change bg to #fff.
+------------------------------------------------- */
+.card-surface:hover,
+.card-surface:focus-within {
+  background-color: var(--gold-500); /* gold bg (set to #fff if you only want gold text) */
+  /* Keep border green or switch to gold outline — pick ONE of the next two lines */
+  border-color: #005109;             /* keep green outline on hover (current look) */
+  /* border-color: var(--gold-600);  */ /* ← alternative: gold outline on hover */
+
+  box-shadow: 0 6px 14px rgba(0,0,0,0.06);
+  transform: translateY(-2px);
+}
+
+/* 🔥 Force inner text to GOLD on hover (overrides DashboardCard styles) */
+.card-surface:hover .card-title,
+.card-surface:hover .card-desc,
+.card-surface:hover p,
+.card-surface:hover span,
+.card-surface:hover a,
+.card-surface:hover small,
+.card-surface:focus-within .card-title,
+.card-surface:focus-within .card-desc,
+.card-surface:focus-within p,
+.card-surface:focus-within span,
+.card-surface:focus-within a,
+.card-surface:focus-within small {
+  color: var(--gold-text) !important;   /* ✅ GOLD text on hover */
+}
+
+/* If your DashboardCard uses SVG icons, tint them GOLD on hover too */
+.card-surface:hover svg,
+.card-surface:focus-within svg {
+  fill: var(--gold-text);
+  stroke: var(--gold-text);
+}
+
+/* Wide screens bump (Admin parity) */
+@media (min-width: 1200px) {
+  .cards-grid { gap: var(--card-gap-lg); }
+  .card-surface {
+    padding: var(--card-padding-lg);
+    min-height: var(--card-min-h-lg);
+  }
+}
+
+/* Accessible keyboard focus */
+.card-surface:focus-visible {
+  outline: 3px solid #93c5fd;
+  outline-offset: 3px;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .card-surface { transition: none; }
+}
+
+/* ------------------ Optional typography inside cards ------------------ */
+.card-title {
+  color: #1f2937;
+  font-weight: 700;
+  font-size: 17px;
+  margin: 0 0 8px 0;
+  line-height: 1.25;
+}
+.card-desc {
+  color: #6b7280;
+  font-size: 14.5px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ------------------ DashboardCard compatibility ------------------ */
+.card-surface > * {
+  width: 100%;
+  height: 100%;
+}
+
+/* Remove inner borders/shadows so the outer surface controls the look */
+.card-surface .card,
+.card-surface .DashboardCard,
+.card-surface .dashboard-card {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}

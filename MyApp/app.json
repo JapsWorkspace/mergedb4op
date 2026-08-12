@@ -1,0 +1,55 @@
+{
+  "expo": {
+    "name": "SagipBayan",
+    "slug": "SagipBayan",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/applogo-v2.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./stores/assets/slogowhite.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#047857"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/applogo-v2.png",
+        "backgroundColor": "#063D2B"
+      },
+      "edgeToEdgeEnabled": true,
+      "softwareKeyboardLayoutMode": "resize",
+      "package": "com.noelmateo.SagipBayan",
+      "googleServicesFile": "./google-services.json",
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyCDgFTzumoSMSpmiJdCJtNouKrRJ3KNvfk"
+        }
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "defaultChannel": "normal-notifications-v2",
+          "sounds": [
+            "./Notification/notification.mp3",
+            "./Notification/dangernotification.mp3",
+            "./Notification/smsnotification.wav"
+          ]
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "d51f3309-b7d5-4704-9eca-951d7700dbfe"
+      }
+    }
+  }
+}

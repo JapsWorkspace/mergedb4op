@@ -1,0 +1,162 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "name": "Sapang Barangay Hall" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [120.905652, 15.323693]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "San Josef Barangay Hall" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [120.911377, 15.334673]
+      }
+    },
+
+    {
+      "type": "Feature",
+      "properties": { "name": "Langla Barangay Hall" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [120.918884, 15.325750]
+      }
+    },
+
+    {
+      "type": "Feature",
+      "properties": { "name": "Santo Tomas North Barangay Hall" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [120.911717, 15.374131]
+      }
+    },
+
+    {
+      "type": "Feature",
+      "properties": { "name": "Santo Tomas South Barangay Hall" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [120.913318, 15.352864]
+      }
+    },
+
+    {
+      "type": "Feature",
+      "properties": { "name": "San Jose Barangay Hall" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [120.902681, 15.361115]
+      }
+    },
+
+     {
+      "type": "Feature",
+      "properties": { "name": "Lambakin Barangay Hall" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [120.863129, 15.371226]
+      }
+    },
+
+     {
+      "type": "Feature",
+      "properties": { "name": "Pakol Barangay Hall" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [120.865684, 15.376613]
+      }
+    },
+
+     {
+      "type": "Feature",
+      "properties": { "name": "Ulanin-Pitak Barangay Hall" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [120.879160, 15.392257]
+      }
+    },
+
+    {
+      "type": "Feature",
+      "properties": { "name": "Hilera Barangay Hall" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [120.864138, 15.385591]
+      }
+    },
+
+    {
+      "type": "Feature",
+      "properties": { "name": "Pamacpacan Barangay Hall" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [120.838924, 15.401916]
+      }
+    },
+   
+    {
+      "type": "Feature",
+      "properties": { "name": "Pinanggaan Barangay Hall" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [120.899431, 15.394814]
+      }
+    },
+
+    {
+      "type": "Feature",
+      "properties": { "name": "Imbunia Barangay Hall" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [120.850744, 15.426009]
+      }
+    },
+
+    {
+      "type": "Feature",
+      "properties": { "name": "Marawa Barangay Hall" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [120.835257, 15.426786]
+      }
+    },
+
+     {
+      "type": "Feature",
+      "properties": { "name": "Malabon Kaingin Barangay Hall" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [120.847205, 15.437745]
+      }
+    }
+  ]
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+

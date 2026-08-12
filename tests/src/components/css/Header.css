@@ -1,0 +1,104 @@
+/* ========= Theme tokens (align with Dashboard.css) ========= */
+:root {
+  --header-green: #062e17;   /* dark matcha */
+  --brand-yellow: #F4C20D;   /* gold */
+  --ink: #0B1D19;
+
+  --shadow-1: 0 6px 16px rgba(0,0,0,.08);
+}
+
+/* ========= Header (matched to Dashboard header) ========= */
+.app-header {
+  /* height similar to dashboard; adjust if you make header taller in Dashboard */
+  --logo-size: 44px;
+
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  height: 64px;                 /* matches Dashboard’s visual rhythm */
+  padding: 0 28px;              /* same horizontal padding */
+  box-sizing: border-box;
+
+  background: var(--header-green);
+  color: #fff;
+  box-shadow: var(--shadow-1);
+}
+
+/* left cluster matches dashboard brand-left */
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.logo-wrap {
+  width: var(--logo-size);
+  height: var(--logo-size);
+  flex: 0 0 var(--logo-size);
+  overflow: hidden;
+  border-radius: 4px; /* optional */
+}
+
+.logo-wrap > img.logo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;          /* keep logo legible */
+}
+
+/* Brand text (same as Dashboard header) */
+.brand-text { display: flex; flex-direction: column; line-height: 1.05; }
+.brand-name { color: #fff; font-weight: 900; letter-spacing: .4px; font-size: 16px; }
+.brand-sub  { color: var(--brand-yellow); font-weight: 900; font-size: 12px; letter-spacing: .6px; }
+
+/* right cluster */
+.header-right { position: relative; display: flex; align-items: center; }
+
+.user-menu {
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: background .2s ease;
+  font-weight: 700;
+}
+.user-menu:hover { background: rgba(255,255,255,.10); }
+.triangle { font-size: 10px; opacity: .9; }
+
+/* dropdown */
+.dropdown {
+  position: absolute; right: 0; top: calc(100% + 8px);
+  background: #fff; color: #111;
+  min-width: 200px; border-radius: 10px; overflow: hidden;
+  box-shadow: 0 12px 24px rgba(0,0,0,.20); border: 1px solid #e5e7eb; z-index: 1000;
+}
+.dropdown button {
+  width: 100%; padding: 12px 14px; border: 0; background: none; 
+  text-align: left; cursor: pointer; font-size: 14px; color: #333;
+}
+.dropdown button:hover { background: #f1f5f9; }
+.dropdown .logout-btn { color: #7a1414; font-weight: 800; }
+
+/* ========= Responsiveness ========= */
+@media (max-width: 768px) {
+  .app-header { padding: 0 16px; height: 60px; }
+  .app-header { --logo-size: 40px; }
+  .brand-name { font-size: 15px; }
+  .brand-sub { font-size: 11px; }
+}
+
+@media (max-width: 480px) {
+  .app-header { padding: 0 12px; height: 58px; }
+  .app-header { --logo-size: 36px; }
+  .brand-name { font-size: 14px; }
+  .brand-sub { font-size: 10px; }
+}

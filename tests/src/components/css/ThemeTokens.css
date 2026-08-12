@@ -1,0 +1,1168 @@
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --content-bg:
+    radial-gradient(circle at top right, rgba(63, 185, 80, 0.14), transparent 24%),
+    radial-gradient(circle at top left, rgba(46, 157, 66, 0.1), transparent 30%),
+    linear-gradient(180deg, #06240e 0%, #0c3618 100%);
+  --content-text: #edf7ef;
+  --page-bg: #0c2814;
+  --surface: #13311b;
+  --surface-soft: #173a20;
+  --surface-strong: #1d4728;
+  --text-main: #edf7ef;
+  --text-soft: #b7cdbd;
+  --text-muted: #90a798;
+  --border-soft: rgba(157, 203, 168, 0.16);
+  --border-strong: rgba(157, 203, 168, 0.28);
+  --shadow-soft: 0 18px 40px rgba(0, 0, 0, 0.26);
+
+  --bg-page: #0c2814;
+  --bg-card: #13311b;
+  --bg-soft: #173a20;
+  --border-mid: #3b6549;
+
+  --inv-surface: #13311b;
+  --inv-surface-soft: #173a20;
+  --inv-surface-soft-2: #1d4728;
+  --inv-border: #2b5738;
+  --inv-border-strong: #3b6549;
+  --inv-text: #edf7ef;
+  --inv-text-soft: #afc7b6;
+  --inv-primary: #6ed08b;
+  --inv-primary-2: #4cc76f;
+  --inv-primary-3: #edf7ef;
+  --inv-success-soft: rgba(34, 197, 94, 0.14);
+  --inv-danger-soft: rgba(239, 68, 68, 0.16);
+  --inv-warning-soft: rgba(245, 158, 11, 0.14);
+  --inv-info-soft: rgba(37, 99, 235, 0.16);
+  --inv-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+  --inv-shadow-soft: 0 12px 30px rgba(0, 0, 0, 0.22);
+
+  --rrl-bg: #0c2814;
+  --rrl-surface: #13311b;
+  --rrl-surface-soft: #173a20;
+  --rrl-border: #2b5738;
+  --rrl-border-strong: #3b6549;
+  --rrl-text: #edf7ef;
+  --rrl-text-soft: #afc7b6;
+  --rrl-primary: #6ed08b;
+  --rrl-primary-2: #4cc76f;
+  --rrl-primary-3: #edf7ef;
+  --rrl-info-soft: rgba(37, 99, 235, 0.16);
+  --rrl-success-soft: rgba(34, 197, 94, 0.14);
+  --rrl-danger-soft: rgba(239, 68, 68, 0.16);
+  --rrl-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+  --rrl-shadow-soft: 0 12px 30px rgba(0, 0, 0, 0.22);
+
+  --rrf-bg: #0c2814;
+  --rrf-surface: #13311b;
+  --rrf-surface-soft: #173a20;
+  --rrf-border: #2b5738;
+  --rrf-border-strong: #3b6549;
+  --rrf-text: #edf7ef;
+  --rrf-text-soft: #afc7b6;
+  --rrf-primary: #6ed08b;
+  --rrf-primary-2: #4cc76f;
+  --rrf-primary-3: #edf7ef;
+  --rrf-danger-soft: rgba(239, 68, 68, 0.16);
+  --rrf-warning-soft: rgba(245, 158, 11, 0.14);
+  --rrf-success-soft: rgba(34, 197, 94, 0.14);
+  --rrf-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+  --rrf-shadow-soft: 0 12px 30px rgba(0, 0, 0, 0.22);
+
+  --ev-bg: #0c2814;
+  --ev-surface: #13311b;
+  --ev-surface-soft: #173a20;
+  --ev-border: #2b5738;
+  --ev-border-strong: #3b6549;
+  --ev-text: #edf7ef;
+  --ev-text-soft: #afc7b6;
+  --ev-green: #6ed08b;
+  --ev-green-2: #4cc76f;
+  --ev-green-3: #2fab61;
+  --ev-green-4: #20934d;
+  --ev-green-soft: rgba(34, 197, 94, 0.14);
+  --ev-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+  --ev-shadow-soft: 0 12px 30px rgba(0, 0, 0, 0.22);
+  --ev-danger-soft: rgba(239, 68, 68, 0.16);
+  --ev-warning-soft: rgba(245, 158, 11, 0.14);
+  --ev-success-soft: rgba(34, 197, 94, 0.14);
+  --ev-blue-soft: rgba(37, 99, 235, 0.16);
+  --ev-info-soft: rgba(37, 99, 235, 0.16);
+  --ev-slate-soft: #183722;
+  --ev-purple-soft: rgba(91, 33, 182, 0.16);
+
+  --gl-surface: #13311b;
+  --gl-surface-soft: #173a20;
+  --gl-border: #2b5738;
+  --gl-border-strong: #3b6549;
+  --gl-text: #edf7ef;
+  --gl-text-soft: #afc7b6;
+  --gl-primary: #6ed08b;
+  --gl-primary-2: #4cc76f;
+  --gl-primary-3: #edf7ef;
+  --gl-shadow-soft: 0 12px 30px rgba(0, 0, 0, 0.22);
+
+  --reg-surface: #13311b;
+  --reg-surface-soft: #173a20;
+  --reg-border: #2b5738;
+  --reg-primary: #6ed08b;
+  --reg-primary-strong: #4cc76f;
+
+  --ea-surface: #13311b;
+  --ea-surface-soft: #173a20;
+  --ea-border: #2b5738;
+  --ea-border-strong: #3b6549;
+  --ea-primary: #6ed08b;
+  --ea-primary-strong: #4cc76f;
+  --ea-muted: #afc7b6;
+
+  --arch-surface: #13311b;
+  --arch-surface-soft: #173a20;
+  --arch-border: #2b5738;
+  --arch-primary: #6ed08b;
+  --arch-primary-strong: #4cc76f;
+  --arch-muted: #afc7b6;
+
+  --alog-border: #2b5738;
+  --alog-primary-strong: #4cc76f;
+  --shared-card-circle: rgba(157, 203, 168, 0.12);
+  --shared-card-circle-success: rgba(34, 197, 94, 0.14);
+  --shared-card-circle-warning: rgba(245, 158, 11, 0.14);
+  --shared-card-circle-danger: rgba(239, 68, 68, 0.14);
+  --shared-card-circle-info: rgba(37, 99, 235, 0.14);
+}
+
+:root {
+  --shared-card-circle: rgba(20, 83, 45, 0.06);
+  --shared-card-circle-success: rgba(22, 163, 74, 0.1);
+  --shared-card-circle-warning: rgba(245, 158, 11, 0.1);
+  --shared-card-circle-danger: rgba(220, 38, 38, 0.08);
+  --shared-card-circle-info: rgba(37, 99, 235, 0.08);
+}
+
+:root[data-theme="dark"] body,
+:root[data-theme="dark"] .dashboard-page,
+:root[data-theme="dark"] .admin-layout,
+:root[data-theme="dark"] .admin-content,
+:root[data-theme="dark"] .admin-content-inner {
+  color: var(--content-text);
+}
+
+:root[data-theme="dark"] .admin-content-inner {
+  background: rgba(9, 29, 15, 0.82);
+  border-color: rgba(157, 203, 168, 0.14);
+  box-shadow: 0 20px 44px rgba(0, 0, 0, 0.28);
+}
+
+:root[data-theme="dark"] .inventory-page,
+:root[data-theme="dark"] .rrl-page,
+:root[data-theme="dark"] .evac-dashboard-page {
+  background:
+    radial-gradient(circle at top right, rgba(63, 185, 80, 0.1), transparent 26%),
+    linear-gradient(180deg, #082611 0%, #0c2814 100%);
+}
+
+:root[data-theme="dark"] .acc-page {
+  background:
+    radial-gradient(circle at top right, rgba(63, 185, 80, 0.14), transparent 24%),
+    radial-gradient(circle at top left, rgba(46, 157, 66, 0.1), transparent 28%),
+    linear-gradient(180deg, #082611 0%, #0c2814 100%);
+}
+
+:root[data-theme="dark"] .login-page,
+:root[data-theme="dark"] .login-right-form,
+:root[data-theme="dark"] .login-left-carousel,
+:root[data-theme="dark"] .form-card,
+:root[data-theme="dark"] .input-shell,
+:root[data-theme="dark"] .input-shell input,
+:root[data-theme="dark"] .input-shell button,
+:root[data-theme="dark"] .login-page .field-label,
+:root[data-theme="dark"] .login-page .card-title,
+:root[data-theme="dark"] .login-page .login-subtitle,
+:root[data-theme="dark"] .login-page .gov-name,
+:root[data-theme="dark"] .login-page .gov-sub,
+:root[data-theme="dark"] .login-page .gov-disclaimer,
+:root[data-theme="dark"] .login-page .security-line {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] .login-page {
+  background:
+    radial-gradient(circle at top right, rgba(38, 120, 60, 0.08), transparent 26%),
+    linear-gradient(180deg, #f4faf5 0%, #edf5ef 100%);
+}
+
+:root[data-theme="dark"] .login-page .form-card {
+  background: rgba(255, 255, 255, 0.88);
+  border-color: rgba(214, 230, 216, 0.95);
+}
+
+:root[data-theme="dark"] .login-page .input-shell {
+  background: rgba(255, 255, 255, 0.96);
+  border-color: #d7e4d9;
+}
+
+:root[data-theme="dark"] .login-page .input-shell input,
+:root[data-theme="dark"] .login-page .input-shell button {
+  background: transparent;
+  color: #173122;
+}
+
+:root[data-theme="dark"] .dashboard-page,
+:root[data-theme="dark"] .dashboard-page * {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] .dashboard-page {
+  --sb-bg: #06240e;
+  --sb-bg-2: #0c3618;
+  --sb-panel: rgba(255, 255, 255, 0.04);
+  --sb-panel-strong: rgba(255, 255, 255, 0.08);
+  --sb-text: #edf7ef;
+  --sb-muted: #aec8b4;
+  --sb-accent: #3fb950;
+  --sb-accent-strong: #2e9d42;
+  --sb-border: rgba(255, 255, 255, 0.08);
+  --sb-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
+  --content-bg:
+    radial-gradient(circle at top right, rgba(15, 90, 32, 0.06), transparent 24%),
+    radial-gradient(circle at top left, rgba(34, 197, 94, 0.05), transparent 30%),
+    linear-gradient(180deg, #f6fbf7 0%, #edf5ef 100%);
+  --content-text: #1b1b1b;
+  --page-bg: #edf5ef;
+  --surface: #ffffff;
+  --surface-soft: #f7fbf8;
+  --surface-strong: #f1f7f2;
+  --text-main: #13311b;
+  --text-soft: #567061;
+  --text-muted: #70887a;
+  --border-soft: rgba(15, 90, 32, 0.1);
+  --border-strong: rgba(15, 90, 32, 0.16);
+  --success-bg: #e8f7ed;
+  --warning-bg: #fff3da;
+  --danger-bg: #fff0f0;
+  --success-text: #166534;
+  --warning-text: #a16207;
+  --danger-text: #b91c1c;
+  background:
+    radial-gradient(circle at top right, rgba(15, 90, 32, 0.06), transparent 24%),
+    radial-gradient(circle at top left, rgba(34, 197, 94, 0.05), transparent 30%),
+    linear-gradient(180deg, #f6fbf7 0%, #edf5ef 100%);
+  color: #13311b;
+}
+
+:root[data-theme="dark"] .inventory-page .inventory-hero,
+:root[data-theme="dark"] .inventory-page .inventory-card,
+:root[data-theme="dark"] .inventory-page .mode-switch,
+:root[data-theme="dark"] .inventory-page .type-switch,
+:root[data-theme="dark"] .inventory-page .release-mode-switch,
+:root[data-theme="dark"] .inventory-page .inventory-top-pill.subtle,
+:root[data-theme="dark"] .inventory-page .inventory-table-wrap,
+:root[data-theme="dark"] .inventory-page .inventory-empty,
+:root[data-theme="dark"] .inventory-page .inventory-stat,
+:root[data-theme="dark"] .inventory-page .inventory-modal-card,
+:root[data-theme="dark"] .inventory-page .inventory-proof-card,
+:root[data-theme="dark"] .inventory-page .inventory-template-card,
+:root[data-theme="dark"] .inventory-page .inventory-release-card,
+:root[data-theme="dark"] .inventory-page .inventory-release-row,
+:root[data-theme="dark"] .inventory-page .inventory-summary-card,
+:root[data-theme="dark"] .inventory-page input,
+:root[data-theme="dark"] .inventory-page select,
+:root[data-theme="dark"] .inventory-page textarea,
+:root[data-theme="dark"] .inventory-page table,
+:root[data-theme="dark"] .inventory-page tbody tr,
+:root[data-theme="dark"] .inventory-page thead tr {
+  background-color: var(--inv-surface) !important;
+  color: var(--inv-text) !important;
+  border-color: var(--inv-border) !important;
+}
+
+:root[data-theme="dark"] .inventory-page .inventory-hero,
+:root[data-theme="dark"] .inventory-page .inventory-card {
+  background: linear-gradient(180deg, rgba(19, 49, 27, 0.98) 0%, rgba(23, 58, 32, 0.98) 100%) !important;
+}
+
+:root[data-theme="dark"] .inventory-page .inventory-top-pill,
+:root[data-theme="dark"] .inventory-page .mode-switch button,
+:root[data-theme="dark"] .inventory-page .type-switch button,
+:root[data-theme="dark"] .inventory-page .release-mode-switch button {
+  color: var(--inv-text) !important;
+}
+
+/* Shared card motif across the dashboard app */
+.shell-page-content :is(
+    .dashboard-card,
+    .card-surface,
+    div[class~="card"],
+    section[class~="card"],
+    article[class~="card"],
+    aside[class~="card"],
+    form[class~="card"],
+    div[class$="-card"],
+    section[class$="-card"],
+    article[class$="-card"],
+    aside[class$="-card"],
+    form[class$="-card"],
+    div[class*="-card "],
+    section[class*="-card "],
+    article[class*="-card "],
+    aside[class*="-card "],
+    form[class*="-card "]
+  ) {
+  position: relative;
+  overflow: hidden;
+}
+
+.shell-page-content :is(
+    .dashboard-card,
+    .card-surface,
+    div[class~="card"],
+    section[class~="card"],
+    article[class~="card"],
+    aside[class~="card"],
+    form[class~="card"],
+    div[class$="-card"],
+    section[class$="-card"],
+    article[class$="-card"],
+    aside[class$="-card"],
+    form[class$="-card"],
+    div[class*="-card "],
+    section[class*="-card "],
+    article[class*="-card "],
+    aside[class*="-card "],
+    form[class*="-card "]
+  )::after {
+  content: "";
+  position: absolute;
+  right: -48px;
+  bottom: -48px;
+  width: 120px;
+  height: 120px;
+  border-radius: 999px;
+  background: var(--shared-card-circle);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.shell-page-content :is(
+    .dashboard-card,
+    .card-surface,
+    div[class~="card"],
+    section[class~="card"],
+    article[class~="card"],
+    aside[class~="card"],
+    form[class~="card"],
+    div[class$="-card"],
+    section[class$="-card"],
+    article[class$="-card"],
+    aside[class$="-card"],
+    form[class$="-card"],
+    div[class*="-card "],
+    section[class*="-card "],
+    article[class*="-card "],
+    aside[class*="-card "],
+    form[class*="-card "]
+  ) > * {
+  position: relative;
+  z-index: 1;
+}
+
+.shell-page-content :is(
+    .dashboard-card,
+    .card-surface,
+    div[class~="card"],
+    section[class~="card"],
+    article[class~="card"],
+    aside[class~="card"],
+    form[class~="card"],
+    div[class$="-card"],
+    section[class$="-card"],
+    article[class$="-card"],
+    aside[class$="-card"],
+    form[class$="-card"],
+    div[class*="-card "],
+    section[class*="-card "],
+    article[class*="-card "],
+    aside[class*="-card "],
+    form[class*="-card "]
+  ):is(.success, .approved, .stable, .available, .visible)::after {
+  background: var(--shared-card-circle-success);
+}
+
+.shell-page-content :is(
+    .dashboard-card,
+    .card-surface,
+    div[class~="card"],
+    section[class~="card"],
+    article[class~="card"],
+    aside[class~="card"],
+    form[class~="card"],
+    div[class$="-card"],
+    section[class$="-card"],
+    article[class$="-card"],
+    aside[class$="-card"],
+    form[class$="-card"],
+    div[class*="-card "],
+    section[class*="-card "],
+    article[class*="-card "],
+    aside[class*="-card "],
+    form[class*="-card "]
+  ):is(.warning, .pending, .notice, .limited)::after {
+  background: var(--shared-card-circle-warning);
+}
+
+.shell-page-content :is(
+    .dashboard-card,
+    .card-surface,
+    div[class~="card"],
+    section[class~="card"],
+    article[class~="card"],
+    aside[class~="card"],
+    form[class~="card"],
+    div[class$="-card"],
+    section[class$="-card"],
+    article[class$="-card"],
+    aside[class$="-card"],
+    form[class$="-card"],
+    div[class*="-card "],
+    section[class*="-card "],
+    article[class*="-card "],
+    aside[class*="-card "],
+    form[class*="-card "]
+  ):is(.danger, .critical, .rejected, .full, .archived)::after {
+  background: var(--shared-card-circle-danger);
+}
+
+.shell-page-content :is(
+    .dashboard-card,
+    .card-surface,
+    div[class~="card"],
+    section[class~="card"],
+    article[class~="card"],
+    aside[class~="card"],
+    form[class~="card"],
+    div[class$="-card"],
+    section[class$="-card"],
+    article[class$="-card"],
+    aside[class$="-card"],
+    form[class$="-card"],
+    div[class*="-card "],
+    section[class*="-card "],
+    article[class*="-card "],
+    aside[class*="-card "],
+    form[class*="-card "]
+  ):is(.info, .muted, .neutral)::after {
+  background: var(--shared-card-circle-info);
+}
+
+:root[data-theme="dark"] .dqv-page .rrl-header-card,
+:root[data-theme="dark"] .dqv-page .rrl-queue-card,
+:root[data-theme="dark"] .dqv-page .rrl-placeholder-card,
+:root[data-theme="dark"] .dqv-page .rrl-details-card-compact,
+:root[data-theme="dark"] .dqv-page .dqv-detail-card,
+:root[data-theme="dark"] .dqv-page .dqv-proof-card,
+:root[data-theme="dark"] .dqv-page .dqv-proof-empty,
+:root[data-theme="dark"] .dqv-page .rrl-queue-item,
+:root[data-theme="dark"] .dqv-page .dqv-duplicate-note {
+  background: linear-gradient(180deg, rgba(19, 49, 27, 0.98) 0%, rgba(23, 58, 32, 0.98) 100%) !important;
+  color: var(--rrl-text) !important;
+  border-color: var(--rrl-border) !important;
+}
+
+:root[data-theme="dark"] .dqv-page .rrl-queue-item.active {
+  box-shadow:
+    0 16px 30px rgba(0, 0, 0, 0.24),
+    0 0 0 1px rgba(76, 199, 111, 0.14) !important;
+}
+
+:root[data-theme="dark"] .gl-page,
+:root[data-theme="dark"] .an-page {
+  background: linear-gradient(180deg, #082611 0%, #0c2814 100%) !important;
+}
+
+:root[data-theme="dark"] .gl-card,
+:root[data-theme="dark"] .gl-header-card,
+:root[data-theme="dark"] .gl-total-card,
+:root[data-theme="dark"] .gl-form-card,
+:root[data-theme="dark"] .gl-list-card,
+:root[data-theme="dark"] .gl-item-card,
+:root[data-theme="dark"] .gl-filter-chip,
+:root[data-theme="dark"] .gl-upload-box,
+:root[data-theme="dark"] .gl-file-pill,
+:root[data-theme="dark"] .gl-input,
+:root[data-theme="dark"] .gl-textarea,
+:root[data-theme="dark"] .gl-modal-textarea,
+:root[data-theme="dark"] .gl-sort-select {
+  background: linear-gradient(180deg, rgba(19, 49, 27, 0.98) 0%, rgba(23, 58, 32, 0.98) 100%) !important;
+  color: var(--gl-text) !important;
+  border-color: var(--gl-border) !important;
+}
+
+:root[data-theme="dark"] .gl-input::placeholder,
+:root[data-theme="dark"] .gl-textarea::placeholder,
+:root[data-theme="dark"] .gl-modal-textarea::placeholder {
+  color: var(--gl-text-soft) !important;
+}
+
+:root[data-theme="dark"] .analytics-page,
+:root[data-theme="dark"] .overview-analytics {
+  color: var(--content-text) !important;
+}
+
+:root[data-theme="dark"] .overview-command-card,
+:root[data-theme="dark"] .overview-ai-card,
+:root[data-theme="dark"] .overview-kpi-card,
+:root[data-theme="dark"] .overview-panel,
+:root[data-theme="dark"] .overview-priority-item,
+:root[data-theme="dark"] .overview-module-card,
+:root[data-theme="dark"] .overview-chart-panel,
+:root[data-theme="dark"] .overview-empty-state,
+:root[data-theme="dark"] .overview-score-ring {
+  background: linear-gradient(180deg, rgba(19, 49, 27, 0.98) 0%, rgba(23, 58, 32, 0.98) 100%) !important;
+  color: var(--content-text) !important;
+  border-color: var(--border-soft) !important;
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.22) !important;
+}
+
+:root[data-theme="dark"] .overview-command-title,
+:root[data-theme="dark"] .overview-panel-title,
+:root[data-theme="dark"] .overview-kpi-value,
+:root[data-theme="dark"] .overview-priority-title,
+:root[data-theme="dark"] .overview-module-title,
+:root[data-theme="dark"] .overview-module-score,
+:root[data-theme="dark"] .overview-empty-title,
+:root[data-theme="dark"] .overview-ai-title,
+:root[data-theme="dark"] .overview-score-ring span {
+  color: var(--content-text) !important;
+}
+
+:root[data-theme="dark"] .overview-command-copy,
+:root[data-theme="dark"] .overview-panel-subtitle,
+:root[data-theme="dark"] .overview-kpi-sub,
+:root[data-theme="dark"] .overview-ai-text,
+:root[data-theme="dark"] .overview-ai-action,
+:root[data-theme="dark"] .overview-priority-text,
+:root[data-theme="dark"] .overview-module-copy,
+:root[data-theme="dark"] .overview-empty-copy,
+:root[data-theme="dark"] .overview-sync-line,
+:root[data-theme="dark"] .overview-score-ring small {
+  color: var(--text-soft) !important;
+}
+
+:root[data-theme="dark"] .overview-eyebrow,
+:root[data-theme="dark"] .overview-command-badge,
+:root[data-theme="dark"] .overview-priority-badge,
+:root[data-theme="dark"] .overview-module-status {
+  background: rgba(76, 199, 111, 0.12) !important;
+  color: var(--content-text) !important;
+  border-color: rgba(157, 203, 168, 0.2) !important;
+}
+
+:root[data-theme="dark"] .overview-ai-icon,
+:root[data-theme="dark"] .overview-kpi-icon,
+:root[data-theme="dark"] .overview-priority-icon,
+:root[data-theme="dark"] .overview-module-icon,
+:root[data-theme="dark"] .overview-kpi-alert {
+  background: rgba(76, 199, 111, 0.12) !important;
+  color: var(--inv-primary) !important;
+  border-color: rgba(157, 203, 168, 0.18) !important;
+}
+
+:root[data-theme="dark"] .overview-module-bar,
+:root[data-theme="dark"] .overview-health-row-track,
+:root[data-theme="dark"] .overview-chart-box,
+:root[data-theme="dark"] .overview-chart-box--doughnut,
+:root[data-theme="dark"] .overview-chart-box--wide {
+  background: rgba(9, 29, 15, 0.72) !important;
+  border-color: var(--border-soft) !important;
+}
+
+:root[data-theme="dark"] .analytics-page .evac-panel,
+:root[data-theme="dark"] .analytics-page .evac-banner,
+:root[data-theme="dark"] .analytics-page .evac-kpi-card,
+:root[data-theme="dark"] .analytics-page .evac-snapshot-card,
+:root[data-theme="dark"] .analytics-page .evac-ranking-row,
+:root[data-theme="dark"] .analytics-page .evac-insight-item,
+:root[data-theme="dark"] .analytics-page .evac-risk-row,
+:root[data-theme="dark"] .analytics-page .evac-deficiency-item,
+:root[data-theme="dark"] .analytics-page .incident-single-alert,
+:root[data-theme="dark"] .analytics-page .incident-record-window-card,
+:root[data-theme="dark"] .analytics-page .incident-record-window-item,
+:root[data-theme="dark"] .analytics-page .incident-kpi-card,
+:root[data-theme="dark"] .analytics-page .incident-health-compact-card,
+:root[data-theme="dark"] .analytics-page .incident-health-panel,
+:root[data-theme="dark"] .analytics-page .incident-trend-panel,
+:root[data-theme="dark"] .analytics-page .incident-ranking-row,
+:root[data-theme="dark"] .analytics-page .incident-insight-item,
+:root[data-theme="dark"] .analytics-page .incident-health-row,
+:root[data-theme="dark"] .analytics-page .relief-single-alert,
+:root[data-theme="dark"] .analytics-page .relief-kpi-card,
+:root[data-theme="dark"] .analytics-page .relief-health-compact-card,
+:root[data-theme="dark"] .analytics-page .relief-trend-panel,
+:root[data-theme="dark"] .analytics-page .relief-ranking-row,
+:root[data-theme="dark"] .analytics-page .relief-insight-item,
+:root[data-theme="dark"] .analytics-page .relief-health-row,
+:root[data-theme="dark"] .analytics-page .relief-action-row,
+:root[data-theme="dark"] .analytics-page .relief-distribution-card,
+:root[data-theme="dark"] .analytics-page .relief-record-window-card,
+:root[data-theme="dark"] .analytics-page .relief-record-window-item {
+  background: linear-gradient(180deg, rgba(19, 49, 27, 0.98) 0%, rgba(23, 58, 32, 0.98) 100%) !important;
+  color: var(--content-text) !important;
+  border-color: var(--border-soft) !important;
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.2) !important;
+}
+
+:root[data-theme="dark"] .analytics-page .evac-banner-icon,
+:root[data-theme="dark"] .analytics-page .evac-kpi-icon,
+:root[data-theme="dark"] .analytics-page .incident-single-alert-icon,
+:root[data-theme="dark"] .analytics-page .incident-record-window-icon,
+:root[data-theme="dark"] .analytics-page .incident-kpi-icon,
+:root[data-theme="dark"] .analytics-page .incident-health-compact-icon,
+:root[data-theme="dark"] .analytics-page .relief-single-alert-icon,
+:root[data-theme="dark"] .analytics-page .relief-kpi-icon,
+:root[data-theme="dark"] .analytics-page .relief-health-compact-icon,
+:root[data-theme="dark"] .analytics-page .relief-record-window-icon {
+  background: rgba(76, 199, 111, 0.12) !important;
+  color: var(--inv-primary) !important;
+  border-color: rgba(157, 203, 168, 0.18) !important;
+}
+
+:root[data-theme="dark"] .analytics-page .evac-banner-title,
+:root[data-theme="dark"] .analytics-page .evac-kpi-value,
+:root[data-theme="dark"] .analytics-page .evac-record-window-value,
+:root[data-theme="dark"] .analytics-page .incident-single-alert-title,
+:root[data-theme="dark"] .analytics-page .incident-record-window-value,
+:root[data-theme="dark"] .analytics-page .incident-health-compact-value,
+:root[data-theme="dark"] .analytics-page .incident-health-row strong,
+:root[data-theme="dark"] .analytics-page .relief-single-alert-title,
+:root[data-theme="dark"] .analytics-page .relief-kpi-value,
+:root[data-theme="dark"] .analytics-page .relief-health-compact-value,
+:root[data-theme="dark"] .analytics-page .relief-health-row strong {
+  color: var(--content-text) !important;
+}
+
+:root[data-theme="dark"] .analytics-page .evac-banner-text,
+:root[data-theme="dark"] .analytics-page .evac-banner-sub,
+:root[data-theme="dark"] .analytics-page .evac-kpi-label,
+:root[data-theme="dark"] .analytics-page .evac-kpi-sub,
+:root[data-theme="dark"] .analytics-page .evac-record-window-label,
+:root[data-theme="dark"] .analytics-page .evac-record-window-sub,
+:root[data-theme="dark"] .analytics-page .evac-insight-copy,
+:root[data-theme="dark"] .analytics-page .incident-single-alert-text,
+:root[data-theme="dark"] .analytics-page .incident-record-window-label,
+:root[data-theme="dark"] .analytics-page .incident-record-window-sub,
+:root[data-theme="dark"] .analytics-page .incident-kpi-label,
+:root[data-theme="dark"] .analytics-page .incident-kpi-sub,
+:root[data-theme="dark"] .analytics-page .incident-health-compact-label,
+:root[data-theme="dark"] .analytics-page .incident-health-compact-sub,
+:root[data-theme="dark"] .analytics-page .incident-health-pill,
+:root[data-theme="dark"] .analytics-page .relief-single-alert-text,
+:root[data-theme="dark"] .analytics-page .relief-kpi-label,
+:root[data-theme="dark"] .analytics-page .relief-kpi-sub,
+:root[data-theme="dark"] .analytics-page .relief-health-compact-label,
+:root[data-theme="dark"] .analytics-page .relief-health-compact-sub,
+:root[data-theme="dark"] .analytics-page .relief-health-pill,
+:root[data-theme="dark"] .analytics-page .relief-record-window-label,
+:root[data-theme="dark"] .analytics-page .relief-record-window-sub {
+  color: var(--text-soft) !important;
+}
+
+:root[data-theme="dark"] .analytics-page .evac-badge,
+:root[data-theme="dark"] .analytics-page .incident-refresh-pill,
+:root[data-theme="dark"] .analytics-page .relief-refresh-pill,
+:root[data-theme="dark"] .analytics-page .relief-export-link,
+:root[data-theme="dark"] .analytics-page .relief-export-link--panel {
+  background: rgba(76, 199, 111, 0.12) !important;
+  color: var(--content-text) !important;
+  border-color: rgba(157, 203, 168, 0.22) !important;
+}
+
+:root[data-theme="dark"] .analytics-page .incident-health-row-track,
+:root[data-theme="dark"] .analytics-page .relief-health-row-track {
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+
+:root[data-theme="dark"] .inventory-page .summary-label,
+:root[data-theme="dark"] .inventory-page .summary-note,
+:root[data-theme="dark"] .inventory-page .section-kicker,
+:root[data-theme="dark"] .inventory-page .section-subtitle,
+:root[data-theme="dark"] .inventory-page .table-kicker,
+:root[data-theme="dark"] .inventory-page .filter-group label,
+:root[data-theme="dark"] .inventory-page .donation-form-group label,
+:root[data-theme="dark"] .inventory-page .rows-control label,
+:root[data-theme="dark"] .inventory-page .inventory-table th,
+:root[data-theme="dark"] .inventory-page .inventory-table thead th,
+:root[data-theme="dark"] .inventory-page .inventory-table .sort-button,
+:root[data-theme="dark"] .inventory-page .inventory-subtitle,
+:root[data-theme="dark"] .inventory-page .inventory-pill,
+:root[data-theme="dark"] .inventory-page .inventory-top-pill {
+  color: var(--inv-text-soft) !important;
+}
+
+:root[data-theme="dark"] .inventory-page .summary-value,
+:root[data-theme="dark"] .inventory-page .inventory-title,
+:root[data-theme="dark"] .inventory-page .section-title,
+:root[data-theme="dark"] .inventory-page .inventory-table td,
+:root[data-theme="dark"] .inventory-page .inventory-table strong,
+:root[data-theme="dark"] .inventory-page .inventory-table .row-title {
+  color: var(--inv-text) !important;
+}
+
+:root[data-theme="dark"] .inventory-page .inventory-filter-bar,
+:root[data-theme="dark"] .inventory-page .inventory-card,
+:root[data-theme="dark"] .inventory-page .summary-card,
+:root[data-theme="dark"] .inventory-page .inventory-header,
+:root[data-theme="dark"] .inventory-page .inventory-table th,
+:root[data-theme="dark"] .inventory-page .inventory-table thead tr {
+  background: linear-gradient(180deg, rgba(19, 49, 27, 0.98) 0%, rgba(23, 58, 32, 0.98) 100%) !important;
+  border-color: var(--inv-border) !important;
+}
+
+:root[data-theme="dark"] .notification-page,
+:root[data-theme="dark"] .audit-page,
+:root[data-theme="dark"] .rr-app,
+:root[data-theme="dark"] .tio-app {
+  background:
+    radial-gradient(circle at top right, rgba(63, 185, 80, 0.12), transparent 24%),
+    linear-gradient(180deg, #082611 0%, #0c2814 100%) !important;
+  color: var(--content-text) !important;
+}
+
+:root[data-theme="dark"] .notification-header-card,
+:root[data-theme="dark"] .notification-filters,
+:root[data-theme="dark"] .notification-summary-card,
+:root[data-theme="dark"] .notification-preferences,
+:root[data-theme="dark"] .notification-card,
+:root[data-theme="dark"] .notification-empty,
+:root[data-theme="dark"] .notification-select,
+:root[data-theme="dark"] .notification-button,
+:root[data-theme="dark"] .module-toggle-pill,
+:root[data-theme="dark"] .audit-header-card,
+:root[data-theme="dark"] .audit-filters,
+:root[data-theme="dark"] .audit-summary-card,
+:root[data-theme="dark"] .audit-day-group,
+:root[data-theme="dark"] .audit-empty-state,
+:root[data-theme="dark"] .audit-search-wrap,
+:root[data-theme="dark"] .audit-button,
+:root[data-theme="dark"] .audit-select,
+:root[data-theme="dark"] .audit-search-input,
+:root[data-theme="dark"] .audit-event-card,
+:root[data-theme="dark"] .audit-pill,
+:root[data-theme="dark"] .audit-priority,
+:root[data-theme="dark"] .rr-card,
+:root[data-theme="dark"] .rr-modal-card,
+:root[data-theme="dark"] .rr-input,
+:root[data-theme="dark"] .rr-select,
+:root[data-theme="dark"] .rr-btn,
+:root[data-theme="dark"] .rr-action,
+:root[data-theme="dark"] .rr-field,
+:root[data-theme="dark"] .tio-table-region,
+:root[data-theme="dark"] .tio-select,
+:root[data-theme="dark"] .tio-input,
+:root[data-theme="dark"] .tio-btn {
+  background: linear-gradient(180deg, rgba(19, 49, 27, 0.98) 0%, rgba(23, 58, 32, 0.98) 100%) !important;
+  color: var(--content-text) !important;
+  border-color: var(--border-soft) !important;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.2) !important;
+}
+
+:root[data-theme="dark"] .notification-title,
+:root[data-theme="dark"] .notification-summary-value,
+:root[data-theme="dark"] .notification-empty-title,
+:root[data-theme="dark"] .audit-title,
+:root[data-theme="dark"] .audit-summary-value,
+:root[data-theme="dark"] .audit-empty-title,
+:root[data-theme="dark"] .audit-day-head h2,
+:root[data-theme="dark"] .audit-event-title,
+:root[data-theme="dark"] .rr-card-title,
+:root[data-theme="dark"] .tio-title,
+:root[data-theme="dark"] .tio-table,
+:root[data-theme="dark"] .rr-table,
+:root[data-theme="dark"] .rr-affected {
+  color: var(--content-text) !important;
+}
+
+:root[data-theme="dark"] .notification-eyebrow,
+:root[data-theme="dark"] .notification-subtitle,
+:root[data-theme="dark"] .notification-toolbar-note,
+:root[data-theme="dark"] .notification-filter-label,
+:root[data-theme="dark"] .notification-summary-label,
+:root[data-theme="dark"] .notification-pref-title,
+:root[data-theme="dark"] .notification-empty-copy,
+:root[data-theme="dark"] .notification-meta,
+:root[data-theme="dark"] .audit-eyebrow,
+:root[data-theme="dark"] .audit-subtitle,
+:root[data-theme="dark"] .audit-toolbar-note,
+:root[data-theme="dark"] .audit-filter-label,
+:root[data-theme="dark"] .audit-summary-label,
+:root[data-theme="dark"] .audit-empty-copy,
+:root[data-theme="dark"] .audit-day-head span,
+:root[data-theme="dark"] .audit-event-time,
+:root[data-theme="dark"] .audit-event-date,
+:root[data-theme="dark"] .audit-event-message,
+:root[data-theme="dark"] .rr-empty,
+:root[data-theme="dark"] .tio-meta,
+:root[data-theme="dark"] .tio-muted,
+:root[data-theme="dark"] .tio-page {
+  color: var(--text-soft) !important;
+}
+
+:root[data-theme="dark"] .notification-button.toggle-on,
+:root[data-theme="dark"] .notification-button.toggle-off,
+:root[data-theme="dark"] .module-toggle-pill.active,
+:root[data-theme="dark"] .module-toggle-pill.muted,
+:root[data-theme="dark"] .audit-pill,
+:root[data-theme="dark"] .audit-priority {
+  background: rgba(76, 199, 111, 0.12) !important;
+  color: var(--content-text) !important;
+  border-color: rgba(157, 203, 168, 0.22) !important;
+}
+
+:root[data-theme="dark"] .notification-card.unread,
+:root[data-theme="dark"] .notification-card-inventory.unread,
+:root[data-theme="dark"] .notification-card-donation.unread {
+  background:
+    linear-gradient(90deg, rgba(76, 199, 111, 0.1), transparent 34%),
+    linear-gradient(180deg, rgba(19, 49, 27, 0.98) 0%, rgba(23, 58, 32, 0.98) 100%) !important;
+}
+
+:root[data-theme="dark"] .rr-toolbar,
+:root[data-theme="dark"] .tio-toolbar {
+  background: #0f3418 !important;
+  border-bottom-color: rgba(157, 203, 168, 0.16) !important;
+}
+
+:root[data-theme="dark"] .rr-table,
+:root[data-theme="dark"] .tio-table {
+  background: transparent !important;
+  border-color: var(--border-soft) !important;
+}
+
+:root[data-theme="dark"] .rr-table thead th,
+:root[data-theme="dark"] .tio-table thead th {
+  background: #163a20 !important;
+  color: var(--content-text) !important;
+  border-bottom-color: rgba(157, 203, 168, 0.16) !important;
+}
+
+:root[data-theme="dark"] .rr-table tbody td,
+:root[data-theme="dark"] .tio-table tbody td,
+:root[data-theme="dark"] .tio-probe-row td {
+  color: var(--content-text) !important;
+  border-bottom-color: rgba(157, 203, 168, 0.08) !important;
+  background: transparent !important;
+}
+
+:root[data-theme="dark"] .rr-row:hover td,
+:root[data-theme="dark"] .tio-table tbody tr:hover td {
+  background: rgba(255, 255, 255, 0.03) !important;
+}
+
+:root[data-theme="dark"] .tio-pagination {
+  background: #13311b !important;
+  border-top-color: rgba(157, 203, 168, 0.12) !important;
+}
+
+:root[data-theme="dark"] .tio-online,
+:root[data-theme="dark"] .tio-offline {
+  background: rgba(76, 199, 111, 0.12) !important;
+  border-color: rgba(157, 203, 168, 0.22) !important;
+  color: var(--content-text) !important;
+}
+
+:root[data-theme="dark"] .evac-dashboard-page,
+:root[data-theme="dark"] .barangay-mode-page {
+  background:
+    radial-gradient(circle at top right, rgba(63, 185, 80, 0.12), transparent 24%),
+    linear-gradient(180deg, #082611 0%, #0c2814 100%) !important;
+  color: var(--ev-text) !important;
+}
+
+:root[data-theme="dark"] .acc-page,
+:root[data-theme="dark"] .admin-logs-page {
+  background:
+    radial-gradient(circle at top right, rgba(63, 185, 80, 0.12), transparent 24%),
+    linear-gradient(180deg, #082611 0%, #0c2814 100%) !important;
+  color: var(--content-text) !important;
+}
+
+:root[data-theme="dark"] .acc-header-card,
+:root[data-theme="dark"] .acc-content,
+:root[data-theme="dark"] .acc-stat-card,
+:root[data-theme="dark"] .acc-tabs,
+:root[data-theme="dark"] .account-modal-card,
+:root[data-theme="dark"] .admin-logs-hero,
+:root[data-theme="dark"] .admin-logs-panel,
+:root[data-theme="dark"] .admin-stat-card,
+:root[data-theme="dark"] .admin-logs-table-region,
+:root[data-theme="dark"] .admin-logs-search,
+:root[data-theme="dark"] .admin-logs-filter,
+:root[data-theme="dark"] .admin-logs-topbar {
+  background: linear-gradient(180deg, rgba(19, 49, 27, 0.98) 0%, rgba(23, 58, 32, 0.98) 100%) !important;
+  color: var(--content-text) !important;
+  border-color: var(--border-soft) !important;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.2) !important;
+}
+
+:root[data-theme="dark"] .acc-kicker,
+:root[data-theme="dark"] .acc-title,
+:root[data-theme="dark"] .acc-stat-title,
+:root[data-theme="dark"] .acc-tab.active,
+:root[data-theme="dark"] .admin-logs-kicker,
+:root[data-theme="dark"] .admin-logs-title,
+:root[data-theme="dark"] .admin-stat-value,
+:root[data-theme="dark"] .admin-logs-table thead th {
+  color: var(--content-text) !important;
+}
+
+:root[data-theme="dark"] .acc-active-pill,
+:root[data-theme="dark"] .acc-tab,
+:root[data-theme="dark"] .admin-logs-pill,
+:root[data-theme="dark"] .admin-logs-table tbody td,
+:root[data-theme="dark"] .admin-logs-empty,
+:root[data-theme="dark"] .admin-log-chip {
+  color: var(--text-soft) !important;
+}
+
+:root[data-theme="dark"] .acc-tab:hover,
+:root[data-theme="dark"] .acc-tab.active,
+:root[data-theme="dark"] .acc-active-pill,
+:root[data-theme="dark"] .admin-log-chip,
+:root[data-theme="dark"] .admin-logs-pill {
+  background: rgba(76, 199, 111, 0.12) !important;
+  border-color: rgba(157, 203, 168, 0.22) !important;
+  color: var(--content-text) !important;
+}
+
+:root[data-theme="dark"] .evac-dashboard-header,
+:root[data-theme="dark"] .barangay-mode-page .evac-dashboard-header,
+:root[data-theme="dark"] .warning-banner,
+:root[data-theme="dark"] .summary-card,
+:root[data-theme="dark"] .barangay-overview-card,
+:root[data-theme="dark"] .barangay-list-card,
+:root[data-theme="dark"] .barangay-item-card,
+:root[data-theme="dark"] .overview-section,
+:root[data-theme="dark"] .overview-list-card,
+:root[data-theme="dark"] .overview-stat-card,
+:root[data-theme="dark"] .map-card,
+:root[data-theme="dark"] .map-shell,
+:root[data-theme="dark"] .map-panel,
+:root[data-theme="dark"] .evac-list-panel,
+:root[data-theme="dark"] .evac-details-panel,
+:root[data-theme="dark"] .evac-history-panel,
+:root[data-theme="dark"] .evac-filter-card,
+:root[data-theme="dark"] .evac-search-card,
+:root[data-theme="dark"] .evac-list-card,
+:root[data-theme="dark"] .evac-center-list,
+:root[data-theme="dark"] .evac-panel-card,
+:root[data-theme="dark"] .evac-tabs,
+:root[data-theme="dark"] .tab-btn,
+:root[data-theme="dark"] .overview-item-card,
+:root[data-theme="dark"] .areas-card,
+:root[data-theme="dark"] .evac-center-card,
+:root[data-theme="dark"] .side-block,
+:root[data-theme="dark"] .place-card,
+:root[data-theme="dark"] .details-hero,
+:root[data-theme="dark"] .details-hero.refined,
+:root[data-theme="dark"] .empty-state-card,
+:root[data-theme="dark"] .side-panel-tabs,
+:root[data-theme="dark"] .pick-mode-banner,
+:root[data-theme="dark"] .empty-state-card,
+:root[data-theme="dark"] .notification-toast,
+:root[data-theme="dark"] .export-bar {
+  background: linear-gradient(180deg, rgba(19, 49, 27, 0.98) 0%, rgba(23, 58, 32, 0.98) 100%) !important;
+  color: var(--ev-text) !important;
+  border-color: var(--ev-border) !important;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.2) !important;
+}
+
+:root[data-theme="dark"] .summary-card.success,
+:root[data-theme="dark"] .summary-card.warning,
+:root[data-theme="dark"] .summary-card.danger,
+:root[data-theme="dark"] .summary-card.accent,
+:root[data-theme="dark"] .summary-card.muted,
+:root[data-theme="dark"] .summary-card.neutral,
+:root[data-theme="dark"] .warning-banner.warning,
+:root[data-theme="dark"] .warning-banner.danger,
+:root[data-theme="dark"] .notification-toast.success,
+:root[data-theme="dark"] .notification-toast.error,
+:root[data-theme="dark"] .notification-toast.info,
+:root[data-theme="dark"] .notification-toast.warning {
+  background: linear-gradient(180deg, rgba(19, 49, 27, 0.98) 0%, rgba(24, 60, 33, 0.98) 100%) !important;
+}
+
+:root[data-theme="dark"] .evac-dashboard-heading h1,
+:root[data-theme="dark"] .summary-value,
+:root[data-theme="dark"] .warning-banner-title,
+:root[data-theme="dark"] .overview-section h2,
+:root[data-theme="dark"] .barangay-overview-title,
+:root[data-theme="dark"] .barangay-item-title,
+:root[data-theme="dark"] .evac-list-title,
+:root[data-theme="dark"] .evac-details-title,
+:root[data-theme="dark"] .evac-history-title,
+:root[data-theme="dark"] .tab-btn.active {
+  color: var(--ev-text) !important;
+}
+
+:root[data-theme="dark"] .evac-dashboard-heading p,
+:root[data-theme="dark"] .summary-label,
+:root[data-theme="dark"] .summary-sub,
+:root[data-theme="dark"] .warning-banner-text,
+:root[data-theme="dark"] .overview-section p,
+:root[data-theme="dark"] .evac-item-meta,
+:root[data-theme="dark"] .evac-item-copy,
+:root[data-theme="dark"] .evac-history-copy,
+:root[data-theme="dark"] .evac-details-copy,
+:root[data-theme="dark"] .notification-text,
+:root[data-theme="dark"] .eyebrow,
+:root[data-theme="dark"] .evac-dashboard-page .filter-group label,
+:root[data-theme="dark"] .evac-dashboard-page .rows-control label,
+:root[data-theme="dark"] .side-block-header p,
+:root[data-theme="dark"] .place-card-subtitle,
+:root[data-theme="dark"] .place-card-meta,
+:root[data-theme="dark"] .details-hero-eyebrow,
+:root[data-theme="dark"] .details-hero .place-card-subtitle,
+:root[data-theme="dark"] .empty-state-card p {
+  color: var(--ev-text-soft) !important;
+}
+
+:root[data-theme="dark"] .side-block-header h3,
+:root[data-theme="dark"] .place-card-title,
+:root[data-theme="dark"] .details-hero-title,
+:root[data-theme="dark"] .details-hero-main,
+:root[data-theme="dark"] .tab-btn.active,
+:root[data-theme="dark"] .empty-state-card h4 {
+  color: var(--ev-text) !important;
+}
+
+:root[data-theme="dark"] .evac-dashboard-page input,
+:root[data-theme="dark"] .evac-dashboard-page select,
+:root[data-theme="dark"] .evac-dashboard-page textarea,
+:root[data-theme="dark"] .evac-dashboard-page .input-shell,
+:root[data-theme="dark"] .evac-dashboard-page .search-input,
+:root[data-theme="dark"] .evac-dashboard-page .filter-select {
+  background: #13311b !important;
+  color: var(--ev-text) !important;
+  border-color: var(--ev-border) !important;
+}
+
+:root[data-theme="dark"] .evac-dashboard-page input::placeholder,
+:root[data-theme="dark"] .evac-dashboard-page textarea::placeholder {
+  color: var(--ev-text-soft) !important;
+}
+
+:root[data-theme="dark"] .evac-dashboard-page .leaflet-container,
+:root[data-theme="dark"] .evac-dashboard-page .leaflet-control,
+:root[data-theme="dark"] .evac-dashboard-page .leaflet-popup-content-wrapper {
+  filter: brightness(0.82) saturate(0.9);
+}
+
+:root[data-theme="dark"] .ghost-btn,
+:root[data-theme="dark"] .tab-btn,
+:root[data-theme="dark"] .tab-btn.active,
+:root[data-theme="dark"] .place-card.selected,
+:root[data-theme="dark"] .place-card:hover {
+  background: rgba(76, 199, 111, 0.12) !important;
+  border-color: rgba(157, 203, 168, 0.24) !important;
+  color: var(--ev-text) !important;
+}
+
+:root[data-theme="dark"] .inventory-page .mode-switch,
+:root[data-theme="dark"] .inventory-page .type-switch,
+:root[data-theme="dark"] .inventory-page .release-mode-switch,
+:root[data-theme="dark"] .inventory-page .inventory-display-switch,
+:root[data-theme="dark"] .add-donations-page .type-switch {
+  background: linear-gradient(180deg, rgba(19, 49, 27, 0.98) 0%, rgba(23, 58, 32, 0.98) 100%) !important;
+  border-color: var(--border-soft) !important;
+}
+
+:root[data-theme="dark"] .inventory-page .mode-switch button,
+:root[data-theme="dark"] .inventory-page .type-switch button,
+:root[data-theme="dark"] .inventory-page .release-mode-switch button,
+:root[data-theme="dark"] .inventory-page .inventory-display-switch button,
+:root[data-theme="dark"] .add-donations-page .type-tab {
+  background: transparent !important;
+  color: var(--content-text) !important;
+  border-color: transparent !important;
+}
+
+:root[data-theme="dark"] .inventory-page .mode-switch button.active,
+:root[data-theme="dark"] .inventory-page .type-switch button.active,
+:root[data-theme="dark"] .inventory-page .release-mode-switch button.active,
+:root[data-theme="dark"] .inventory-page .inventory-display-switch button.active,
+:root[data-theme="dark"] .add-donations-page .type-tab.active,
+:root[data-theme="dark"] .inventory-page .btn.btn-secondary,
+:root[data-theme="dark"] .add-donations-page .btn.btn-secondary,
+:root[data-theme="dark"] .inventory-page .inventory-clear-btn,
+:root[data-theme="dark"] .add-donations-page .inventory-clear-btn {
+  background: rgba(76, 199, 111, 0.14) !important;
+  color: var(--content-text) !important;
+  border-color: rgba(157, 203, 168, 0.24) !important;
+  box-shadow: none !important;
+}
+
+:root[data-theme="dark"] .inventory-page .btn.btn-secondary:disabled,
+:root[data-theme="dark"] .add-donations-page .btn.btn-secondary:disabled,
+:root[data-theme="dark"] .inventory-page .inventory-clear-btn:disabled,
+:root[data-theme="dark"] .add-donations-page .inventory-clear-btn:disabled {
+  opacity: 0.65 !important;
+}
+
+:root[data-theme="dark"] .inventory-page .inventory-card,
+:root[data-theme="dark"] .inventory-page .inventory-panel,
+:root[data-theme="dark"] .add-donations-page .inventory-card,
+:root[data-theme="dark"] .add-donations-page .inventory-panel {
+  background: linear-gradient(180deg, rgba(19, 49, 27, 0.98) 0%, rgba(23, 58, 32, 0.98) 100%) !important;
+  border-color: var(--border-soft) !important;
+}
+
+:root[data-theme="dark"] .rrf-modal-card,
+:root[data-theme="dark"] .rrl-modal-card,
+:root[data-theme="dark"] .rrl-pdf-modal,
+:root[data-theme="dark"] .inventory-modal,
+:root[data-theme="dark"] .inventory-confirm-card,
+:root[data-theme="dark"] .dqv-modal-card,
+:root[data-theme="dark"] .dqv-image-modal-card,
+:root[data-theme="dark"] .evac-modal-card,
+:root[data-theme="dark"] .gl-modal-card,
+:root[data-theme="dark"] .gl-modal-card-fixed,
+:root[data-theme="dark"] .account-modal-card,
+:root[data-theme="dark"] .incident-action-modal-card,
+:root[data-theme="dark"] .incident-image-modal-card,
+:root[data-theme="dark"] .incident-history-modal-card,
+:root[data-theme="dark"] .rr-modal-card,
+:root[data-theme="dark"] .modal {
+  background: linear-gradient(180deg, rgba(19, 49, 27, 0.98) 0%, rgba(23, 58, 32, 0.98) 100%) !important;
+  color: var(--content-text) !important;
+  border-color: rgba(157, 203, 168, 0.22) !important;
+}
+
+:root[data-theme="dark"] .rrf-modal-card h3,
+:root[data-theme="dark"] .rrl-modal-card h3,
+:root[data-theme="dark"] .inventory-modal-head h3,
+:root[data-theme="dark"] .evac-modal-header h3,
+:root[data-theme="dark"] .gl-modal-card h3,
+:root[data-theme="dark"] .gl-modal-card-fixed h3,
+:root[data-theme="dark"] .account-modal-title,
+:root[data-theme="dark"] .incident-action-modal-head h3,
+:root[data-theme="dark"] .incident-history-modal-head h3,
+:root[data-theme="dark"] .rr-modal-title,
+:root[data-theme="dark"] .modal h2,
+:root[data-theme="dark"] .modal h3 {
+  color: var(--content-text) !important;
+}
+
+:root[data-theme="dark"] .rrf-modal-card p,
+:root[data-theme="dark"] .rrl-modal-card p,
+:root[data-theme="dark"] .inventory-modal-head p,
+:root[data-theme="dark"] .evac-modal-header p,
+:root[data-theme="dark"] .gl-modal-card p,
+:root[data-theme="dark"] .gl-modal-card-fixed p,
+:root[data-theme="dark"] .account-modal-message,
+:root[data-theme="dark"] .incident-action-modal-head p,
+:root[data-theme="dark"] .incident-history-modal-head p,
+:root[data-theme="dark"] .modal p {
+  color: var(--text-soft) !important;
+}

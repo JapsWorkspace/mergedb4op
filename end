@@ -1,0 +1,37 @@
+warning: in the working copy of 'MyApp/server/controllers/drrmoController.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'MyApp/server/routes/drrmoRoutes.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'MyApp/server/routes/reliefTrackingRoutes.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'MyApp/server/controllers/drrmoController.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'MyApp/server/routes/drrmoRoutes.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'MyApp/server/routes/reliefTrackingRoutes.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'MyApp/server/routes/drrmoRoutes.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'MyApp/server/routes/reliefTrackingRoutes.js', LF will be replaced by CRLF the next time Git touches it
+MyApp/server/controllers/EvacController.js
+MyApp/server/controllers/barangayController.js
+MyApp/server/controllers/barangayStockController.js
+MyApp/server/controllers/drrmoController.js
+MyApp/server/controllers/inventoryController.js
+MyApp/server/controllers/reliefReleaseController.js
+MyApp/server/controllers/reliefRequestController.js
+MyApp/server/controllers/reliefTrackingController.js
+MyApp/server/middleware/adminMiddleware.js
+MyApp/server/models/Barangay.js
+MyApp/server/models/BarangayStock.js
+MyApp/server/models/BarangayStockTransaction.js
+MyApp/server/models/EvacHistory.js
+MyApp/server/models/EvacPlace.js
+MyApp/server/models/InventoryItem.js
+MyApp/server/models/InventoryLog.js
+MyApp/server/models/ReliefRelease.js
+MyApp/server/models/ReliefRequest.js
+MyApp/server/routes/EvacRoutes.js
+MyApp/server/routes/barangayRoutes.js
+MyApp/server/routes/barangayStockRoutes.js
+MyApp/server/routes/drrmoRoutes.js
+MyApp/server/routes/incidentRoutes.js
+MyApp/server/routes/inventoryRoutes.js
+MyApp/server/routes/reliefReleaseRoutes.js
+MyApp/server/routes/reliefRequestRoutes.js
+MyApp/server/routes/reliefTrackingRoutes.js
+MyApp/server/server.js
+MyApp/server/utils/sendReliefRequestEmail.js

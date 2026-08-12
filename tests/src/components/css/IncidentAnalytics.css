@@ -1,0 +1,904 @@
+.analytics-page .incident-analytics-clean {
+  display: grid;
+  gap: 14px;
+  animation: incident-fade-up 0.24s ease both;
+}
+
+@keyframes incident-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Alert */
+.analytics-page .incident-single-alert {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 15px;
+  border-radius: 16px;
+  border: 1px solid rgba(20, 83, 45, 0.12);
+  background: #ffffff;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+}
+
+.analytics-page .incident-single-alert.success {
+  background: linear-gradient(180deg, #ffffff 0%, #ecfdf3 100%);
+  border-color: #bfe0c7;
+}
+
+.analytics-page .incident-single-alert.warning {
+  background: linear-gradient(180deg, #ffffff 0%, #fff7ed 100%);
+  border-color: #fed7aa;
+}
+
+.analytics-page .incident-single-alert.notice {
+  background: linear-gradient(180deg, #ffffff 0%, #fffbeb 100%);
+  border-color: #fde68a;
+}
+
+.analytics-page .incident-single-alert-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  background: rgba(255, 255, 255, 0.86);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  color: #166534;
+}
+
+.analytics-page .incident-single-alert.warning .incident-single-alert-icon,
+.analytics-page .incident-single-alert.notice .incident-single-alert-icon {
+  color: #b54708;
+}
+
+.analytics-page .incident-single-alert-title {
+  font-size: 13px;
+  font-weight: 900;
+  color: #17221c;
+}
+
+.analytics-page .incident-single-alert-text {
+  margin-top: 4px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #607066;
+  font-weight: 700;
+}
+
+.analytics-page .incident-refresh-pill {
+  align-self: center;
+  margin-left: auto;
+  border-radius: 999px;
+  padding: 7px 10px;
+  background: rgba(20, 83, 45, 0.08);
+  color: #14532d;
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* KPI */
+.analytics-page .incident-kpi-grid-clean {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.analytics-page .incident-record-window-card {
+  margin-top: 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(20, 83, 45, 0.12);
+  background: #ffffff;
+  box-shadow: 0 10px 22px rgba(20, 83, 45, 0.07);
+  padding: 16px;
+}
+
+.analytics-page .incident-record-window-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.analytics-page .incident-record-window-item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  border: 1px solid rgba(20, 83, 45, 0.12);
+  border-radius: 18px;
+  padding: 15px;
+  background: #f8fbf9;
+}
+
+.analytics-page .incident-record-window-item.info {
+  background: linear-gradient(180deg, #ffffff 0%, #eef6ff 100%);
+}
+
+.analytics-page .incident-record-window-item.notice {
+  background: linear-gradient(180deg, #ffffff 0%, #fff7eb 100%);
+}
+
+.analytics-page .incident-record-window-item.success {
+  background: linear-gradient(180deg, #ffffff 0%, #effaf2 100%);
+}
+
+.analytics-page .incident-record-window-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #166534;
+  background: rgba(22, 101, 52, 0.08);
+  flex-shrink: 0;
+}
+
+.analytics-page .incident-record-window-copy {
+  min-width: 0;
+}
+
+.analytics-page .incident-record-window-label {
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #5b6f60;
+}
+
+.analytics-page .incident-record-window-value {
+  margin-top: 8px;
+  font-size: 31px;
+  line-height: 1;
+  font-weight: 900;
+  color: #10281b;
+}
+
+.analytics-page .incident-record-window-sub {
+  margin-top: 8px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: #5b6f60;
+}
+
+.analytics-page .incident-kpi-card {
+  min-height: 126px;
+  border-radius: 18px;
+  padding: 14px;
+  border: 1px solid rgba(20, 83, 45, 0.12);
+  background: #ffffff;
+  box-shadow: 0 10px 22px rgba(20, 83, 45, 0.07);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.analytics-page .incident-kpi-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 28px rgba(20, 83, 45, 0.1);
+}
+
+.analytics-page .incident-kpi-card.success {
+  background: linear-gradient(180deg, #ffffff 0%, #ecfdf3 100%);
+}
+
+.analytics-page .incident-kpi-card.warning {
+  background: linear-gradient(180deg, #ffffff 0%, #fff7ed 100%);
+  border-color: #fed7aa;
+}
+
+.analytics-page .incident-kpi-card.neutral {
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+}
+
+.analytics-page .incident-kpi-card.urgent {
+  animation: incident-soft-warning 1.8s ease-in-out infinite;
+}
+
+@keyframes incident-soft-warning {
+  0%,
+  100% {
+    box-shadow: 0 12px 30px rgba(20, 83, 45, 0.08);
+  }
+
+  50% {
+    box-shadow: 0 14px 32px rgba(245, 158, 11, 0.16);
+  }
+}
+
+.analytics-page .incident-kpi-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.analytics-page .incident-kpi-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: rgba(20, 83, 45, 0.08);
+  color: #166534;
+}
+
+.analytics-page .incident-kpi-alert {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  color: #b54708;
+  font-size: 12px;
+  font-weight: 900;
+  animation: incident-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes incident-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 rgba(245, 158, 11, 0);
+  }
+
+  50% {
+    transform: scale(1.08);
+    box-shadow: 0 0 0 6px rgba(245, 158, 11, 0.12);
+  }
+}
+
+.analytics-page .incident-kpi-label {
+  margin-top: 12px;
+  color: #607066;
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.analytics-page .incident-kpi-value {
+  margin-top: 7px;
+  font-size: 30px;
+  line-height: 1;
+  font-weight: 900;
+  color: #17221c;
+}
+
+.analytics-page .incident-kpi-sub {
+  margin-top: 8px;
+  color: #607066;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* Main panels */
+.analytics-page .incident-main-grid-clean {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(360px, 0.75fr);
+  gap: 14px;
+  align-items: stretch;
+}
+
+.analytics-page .incident-clean-card {
+  min-height: 0;
+}
+
+.analytics-page .incident-panel-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.analytics-page .incident-panel-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #166534;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.analytics-page .incident-panel-title {
+  margin-top: 6px;
+  font-size: 18px;
+  font-weight: 900;
+  color: #17221c;
+}
+
+.analytics-page .incident-ai-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.analytics-page .incident-severity,
+.analytics-page .incident-source-badge,
+.analytics-page .incident-health-pill {
+  border-radius: 999px;
+  padding: 7px 10px;
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.analytics-page .incident-severity--success {
+  background: #ecfdf3;
+  color: #166534;
+  border: 1px solid #bfe0c7;
+}
+
+.analytics-page .incident-severity--info {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+.analytics-page .incident-severity--notice {
+  background: #fffbeb;
+  color: #a16207;
+  border: 1px solid #fde68a;
+}
+
+.analytics-page .incident-severity--warning {
+  background: #fff7ed;
+  color: #b54708;
+  border: 1px solid #fed7aa;
+}
+
+.analytics-page .incident-severity--critical {
+  background: #fef2f2;
+  color: #b42318;
+  border: 1px solid #f1c5c5;
+}
+
+.analytics-page .incident-source-badge,
+.analytics-page .incident-health-pill {
+  background: rgba(20, 83, 45, 0.08);
+  color: #14532d;
+  border: 1px solid rgba(20, 83, 45, 0.12);
+}
+
+.analytics-page .incident-ai-summary {
+  border-radius: 16px;
+  padding: 13px;
+  background: linear-gradient(180deg, #ffffff 0%, #ecfdf3 100%);
+  border: 1px solid rgba(20, 83, 45, 0.12);
+  color: #17221c;
+  font-size: 13px;
+  line-height: 1.55;
+  font-weight: 700;
+}
+
+.analytics-page .incident-action-list {
+  margin-top: 14px;
+  border-radius: 16px;
+  padding: 13px;
+  background: #ffffff;
+  border: 1px solid rgba(20, 83, 45, 0.1);
+}
+
+.analytics-page .incident-action-title {
+  font-size: 12px;
+  font-weight: 900;
+  color: #14532d;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.analytics-page .incident-action-list ul {
+  margin: 10px 0 0;
+  padding-left: 18px;
+  color: #3f4f45;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.analytics-page .incident-inline-empty {
+  margin-top: 10px;
+  color: #607066;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* Compact readiness */
+.analytics-page .incident-health-compact-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.analytics-page .incident-health-compact-card {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  border-radius: 16px;
+  padding: 12px;
+  background: #ffffff;
+  border: 1px solid rgba(20, 83, 45, 0.1);
+}
+
+.analytics-page .incident-health-compact-card.success {
+  background: #ecfdf3;
+  border-color: #bfe0c7;
+}
+
+.analytics-page .incident-health-compact-card.warning {
+  background: #fff7ed;
+  border-color: #fed7aa;
+}
+
+.analytics-page .incident-health-compact-card.notice {
+  background: #fffbeb;
+  border-color: #fde68a;
+}
+
+.analytics-page .incident-health-compact-card.info {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+}
+
+.analytics-page .incident-health-compact-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: rgba(20, 83, 45, 0.08);
+  color: #166534;
+}
+
+.analytics-page .incident-health-compact-label {
+  font-size: 12px;
+  color: #14532d;
+  font-weight: 900;
+}
+
+.analytics-page .incident-health-compact-value {
+  margin-top: 4px;
+  font-size: 24px;
+  line-height: 1;
+  font-weight: 900;
+  color: #17221c;
+}
+
+.analytics-page .incident-health-compact-sub {
+  margin-top: 5px;
+  color: #607066;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* Rankings */
+.analytics-page .incident-ranking-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.analytics-page .incident-ranking-card {
+  min-height: 290px;
+}
+
+.analytics-page .incident-ranking-list {
+  display: grid;
+  gap: 10px;
+}
+
+.analytics-page .incident-ranking-row {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 13px;
+  border-radius: 16px;
+  background: #ffffff;
+  border: 1px solid rgba(20, 83, 45, 0.1);
+  box-shadow: 0 8px 18px rgba(20, 83, 45, 0.04);
+}
+
+.analytics-page .incident-ranking-row:first-child {
+  background: linear-gradient(180deg, #ffffff 0%, #ecfdf3 100%);
+  border-color: #bfe0c7;
+}
+
+.analytics-page .incident-rank-badge {
+  width: 38px;
+  height: 38px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 1000;
+  color: #14532d;
+  background: rgba(20, 83, 45, 0.08);
+  border: 1px solid rgba(20, 83, 45, 0.12);
+}
+
+.analytics-page .incident-rank-badge.rank-1 {
+  color: #14532d;
+  background: #dcfce7;
+  border-color: #86efac;
+}
+
+.analytics-page .incident-rank-badge.rank-2 {
+  color: #854d0e;
+  background: #fef3c7;
+  border-color: #fde68a;
+}
+
+.analytics-page .incident-rank-badge.rank-3 {
+  color: #166534;
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+
+.analytics-page .incident-ranking-main {
+  min-width: 0;
+}
+
+.analytics-page .incident-ranking-title {
+  color: #17221c;
+  font-size: 13px;
+  font-weight: 1000;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.analytics-page .incident-ranking-meta {
+  margin-top: 4px;
+  color: #607066;
+  font-size: 12px;
+  font-weight: 700;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.analytics-page .incident-ranking-value {
+  border-radius: 999px;
+  padding: 7px 10px;
+  background: #ecfdf3;
+  border: 1px solid #bfe0c7;
+  color: #14532d;
+  font-size: 11px;
+  font-weight: 1000;
+  white-space: nowrap;
+}
+
+.analytics-page .incident-ranked-chart-row b {
+  display: inline-grid;
+  place-items: center;
+  min-width: 26px;
+  height: 22px;
+  margin-right: 6px;
+  border-radius: 999px;
+  background: #ecfdf3;
+  color: #14532d;
+  font-size: 10px;
+  font-weight: 1000;
+  border: 1px solid #bfe0c7;
+}
+
+/* Graphs */
+.analytics-page .incident-graph-grid-clean {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.analytics-page .incident-trend-ai-grid {
+  grid-template-columns: minmax(0, 1fr) minmax(380px, 0.8fr);
+}
+
+.analytics-page .incident-chart-card {
+  min-height: 0 !important;
+}
+
+.analytics-page .incident-chart-card .a-chart-body {
+  height: 300px !important;
+}
+
+.analytics-page .incident-doughnut-body {
+  height: 300px !important;
+}
+
+.analytics-page .incident-card-subtitle {
+  margin-top: 4px;
+  color: #607066;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.analytics-page .incident-chart-value-list,
+.analytics-page .incident-health-value-list {
+  margin-top: 14px;
+  display: grid;
+  gap: 10px;
+}
+
+.analytics-page .incident-chart-value-row,
+.analytics-page .incident-health-row {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr) 64px;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #14532d;
+}
+
+.analytics-page .incident-chart-value-track,
+.analytics-page .incident-health-row-track {
+  height: 9px;
+  border-radius: 999px;
+  background: rgba(20, 83, 45, 0.08);
+  overflow: hidden;
+}
+
+.analytics-page .incident-chart-value-fill,
+.analytics-page .incident-health-row-track span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: #16a34a;
+}
+
+.analytics-page .incident-health-row.success .incident-health-row-track span {
+  background: #16a34a;
+}
+
+.analytics-page .incident-health-row.info .incident-health-row-track span {
+  background: #2563eb;
+}
+
+.analytics-page .incident-health-row.notice .incident-health-row-track span {
+  background: #eab308;
+}
+
+.analytics-page .incident-health-row.warning .incident-health-row-track span {
+  background: #f59e0b;
+}
+
+.analytics-page .incident-health-row.danger .incident-health-row-track span {
+  background: #dc2626;
+}
+
+.analytics-page .incident-chart-value-row strong,
+.analytics-page .incident-health-row strong {
+  text-align: right;
+  color: #052e16;
+}
+
+/* Signals */
+.analytics-page .incident-signals-clean {
+  overflow: hidden;
+}
+
+.analytics-page .incident-ai-signals-card {
+  align-self: stretch;
+}
+
+.analytics-page .incident-signal-grid-clean {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.analytics-page .incident-insight-item {
+  border-radius: 16px;
+  padding: 13px;
+  border: 1px solid rgba(20, 83, 45, 0.12);
+  background: #ffffff;
+}
+
+.analytics-page .incident-insight-item--success {
+  background: linear-gradient(180deg, #ffffff 0%, #ecfdf3 100%);
+  border-color: #bfe0c7;
+}
+
+.analytics-page .incident-insight-item--info {
+  background: linear-gradient(180deg, #ffffff 0%, #eff6ff 100%);
+  border-color: #bfdbfe;
+}
+
+.analytics-page .incident-insight-item--notice {
+  background: linear-gradient(180deg, #ffffff 0%, #fffbeb 100%);
+  border-color: #fde68a;
+}
+
+.analytics-page .incident-insight-item--warning {
+  background: linear-gradient(180deg, #ffffff 0%, #fff7ed 100%);
+  border-color: #fed7aa;
+}
+
+.analytics-page .incident-insight-item--critical {
+  background: linear-gradient(180deg, #ffffff 0%, #fef2f2 100%);
+  border-color: #f1c5c5;
+}
+
+.analytics-page .incident-insight-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.analytics-page .incident-insight-title {
+  color: #17221c;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.analytics-page .incident-insight-badge {
+  border-radius: 999px;
+  padding: 5px 8px;
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.analytics-page .incident-insight-badge--success {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.analytics-page .incident-insight-badge--info {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.analytics-page .incident-insight-badge--notice {
+  background: #fef3c7;
+  color: #a16207;
+}
+
+.analytics-page .incident-insight-badge--warning {
+  background: #ffedd5;
+  color: #b54708;
+}
+
+.analytics-page .incident-insight-badge--critical {
+  background: #fee2e2;
+  color: #b42318;
+}
+
+.analytics-page .incident-insight-message {
+  margin-top: 9px;
+  color: #3f4f45;
+  font-size: 13px;
+  line-height: 1.5;
+  font-weight: 700;
+}
+
+.analytics-page .incident-insight-action {
+  margin-top: 9px;
+  color: #14532d;
+  font-size: 12px;
+  line-height: 1.45;
+  font-weight: 700;
+}
+
+/* Card circle accents */
+.analytics-page .incident-analytics-clean .incident-kpi-card,
+.analytics-page .incident-analytics-clean .incident-clean-card,
+.analytics-page .incident-analytics-clean .incident-chart-card,
+.analytics-page .incident-analytics-clean .incident-ranking-card,
+.analytics-page .incident-analytics-clean .incident-signals-clean {
+  position: relative;
+  overflow: hidden;
+}
+
+.analytics-page .incident-analytics-clean .incident-kpi-card::after,
+.analytics-page .incident-analytics-clean .incident-clean-card::after,
+.analytics-page .incident-analytics-clean .incident-chart-card::after,
+.analytics-page .incident-analytics-clean .incident-ranking-card::after,
+.analytics-page .incident-analytics-clean .incident-signals-clean::after {
+  content: "";
+  position: absolute;
+  right: -22px;
+  bottom: -26px;
+  width: 88px;
+  height: 88px;
+  border-radius: 999px;
+  background: rgba(20, 83, 45, 0.045);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.analytics-page .incident-analytics-clean .incident-kpi-card.warning::after,
+.analytics-page .incident-analytics-clean .incident-health-compact-card.notice::after,
+.analytics-page .incident-analytics-clean .incident-health-compact-card.warning::after {
+  background: rgba(245, 158, 11, 0.08);
+}
+
+.analytics-page .incident-analytics-clean .incident-kpi-card > *,
+.analytics-page .incident-analytics-clean .incident-clean-card > *,
+.analytics-page .incident-analytics-clean .incident-chart-card > *,
+.analytics-page .incident-analytics-clean .incident-ranking-card > *,
+.analytics-page .incident-analytics-clean .incident-signals-clean > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Responsive */
+@media (max-width: 1180px) {
+  .analytics-page .incident-kpi-grid-clean,
+  .analytics-page .incident-record-window-grid,
+  .analytics-page .incident-main-grid-clean,
+  .analytics-page .incident-graph-grid-clean,
+  .analytics-page .incident-signal-grid-clean,
+  .analytics-page .incident-ranking-grid,
+  .analytics-page .incident-trend-ai-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .analytics-page .incident-ranking-card {
+    min-height: 0;
+  }
+}
+
+@media (max-width: 760px) {
+  .analytics-page .incident-single-alert {
+    flex-wrap: wrap;
+  }
+
+  .analytics-page .incident-refresh-pill {
+    margin-left: 0;
+  }
+
+  .analytics-page .incident-health-compact-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .analytics-page .incident-ranking-row {
+    grid-template-columns: 38px minmax(0, 1fr);
+  }
+
+  .analytics-page .incident-ranking-value {
+    grid-column: 2;
+    width: fit-content;
+  }
+
+  .analytics-page .incident-panel-head {
+    flex-direction: column;
+  }
+
+  .analytics-page .incident-record-window-item {
+    align-items: center;
+  }
+
+  .analytics-page .incident-ai-meta {
+    justify-content: flex-start;
+  }
+
+  .analytics-page .incident-chart-value-row,
+  .analytics-page .incident-health-row {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .analytics-page .incident-chart-value-row strong,
+  .analytics-page .incident-health-row strong {
+    text-align: left;
+  }
+}

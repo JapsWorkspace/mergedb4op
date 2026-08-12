@@ -1,0 +1,87 @@
+/* Fullscreen overlay */
+.splash-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+/* === Logos row === */
+.splash-logos {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;               /* "close to each other" spacing */
+  margin-bottom: 26px;
+  animation: fadeIn 0.9s ease-in-out;
+}
+
+/* Individual logos (balanced sizes) */
+.splash-logo {
+  height: 230px;            /* shared baseline height */
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,0.08));
+}
+
+/* If you ever need asymmetry later, you can tweak these hooks */
+.splash-logo--left  { }
+.splash-logo--right { }
+
+/* Dots */
+.dots-container {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background-color: #000000;   /* dark blue-ish system color */
+  opacity: 0.3;
+  transform: translateY(0);
+}
+.dot.active {
+  opacity: 1;
+  animation: bounce 0.5s ease infinite alternate;
+}
+
+/* Text */
+.splash-text {
+  color: #000000;
+  font-family: var(--app-font-sans);
+  font-size: 22px;
+  text-align: center;
+  margin: 0;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes bounce {
+  0%   { transform: translateY(0); }
+  50%  { transform: translateY(-12px); }
+  100% { transform: translateY(0); }
+}
+
+/* === Responsiveness === */
+@media (max-width: 768px) {
+  .splash-logo { height: 76px; }
+  .dots-container { gap: 8px; }
+  .dot { width: 12px; height: 12px; }
+  .splash-text { font-size: 18px; }
+}
+@media (max-width: 420px) {
+  .splash-logos { gap: 14px; }
+  .splash-logo { height: 64px; }
+  .splash-text { font-size: 16px; }
+}

@@ -1,0 +1,197 @@
+/* ---------- Design tokens ---------- */
+:root{
+  --bg:#F5F7FA;
+  --panel:#FFFFFF;
+  --ink:#0F172A;
+  --muted:#64748B;
+  --brand:#1E3A8A;
+  --accent:#0EA5E9;
+  --surface:#E5E7EB;
+  --incoming:#EEF2F7;
+  --outgoing:#1F3A63;
+  --radius:12px;
+  --gap:12px;
+  --shadow:0 1px 4px rgba(0,0,0,.06);
+}
+
+*{box-sizing:border-box}
+body { margin:0; }
+
+/* ---------- Page & Shell ---------- */
+.page{
+  height:100vh;
+  width:100vw;
+  background:var(--bg);
+  display:flex;
+  flex-direction:column;
+  color:var(--ink);
+  font:14px/1.4 system-ui, Segoe UI, Roboto, Arial, sans-serif;
+}
+
+.shell{
+  display:grid;
+  gap:12px;
+  padding:12px;
+  flex:1;
+  min-height:0;
+}
+
+/* DRRMO has 3 columns; Barangay hides the middle column */
+.shell--drrmo{ grid-template-columns:260px 320px 1fr; }
+.shell--barangay{ grid-template-columns:260px 0 1fr; }
+
+.panel{
+  background:var(--panel);
+  border:1px solid var(--surface);
+  border-radius:12px;
+  box-shadow:0 1px 1px rgba(0,0,0,.02);
+  display:flex;
+  flex-direction:column;
+  min-height:0;
+}
+.panel--left{ padding:12px; }
+.panel--middle{ overflow:hidden; }
+.panel--right{ padding:12px; }
+
+/* ---------- Left Panel ---------- */
+.panel__title{ font-weight:700; color:var(--ink); margin-bottom:8px; }
+.nav-item{
+  all:unset;
+  padding:10px 12px;
+  border-radius:10px;
+  background:#f8fafc;
+  color:var(--ink);
+  cursor:pointer;
+  margin-bottom:6px;
+}
+.nav-item--active{
+  background:#fff;
+  border:1px solid var(--surface);
+}
+.panel__footer{
+  margin-top:auto;
+  font-size:12px;
+  color:var(--muted);
+}
+
+/* ---------- Middle: Conversation List ---------- */
+.panel__search{
+  padding:12px;
+  border-bottom:1px solid #eef2f7;
+}
+.search{
+  width:100%;
+  padding:10px 12px;
+  border-radius:10px;
+  border:1px solid var(--surface);
+  background:#fafafa;
+  outline:none;
+}
+.convo-list{ overflow:auto; padding:8px; }
+.convo-row{
+  display:grid;
+  grid-template-columns:40px 1fr auto;
+  gap:10px;
+  align-items:center;
+  padding:10px;
+  margin-bottom:6px;
+  cursor:pointer;
+  border-radius:10px;
+  border:1px solid transparent;
+}
+.convo-row:hover{ background:#FAFBFC; }
+.convo-row--active{
+  background:#E6F0FF;
+  border-color:#BBD2FF;
+}
+.avatar{
+  height:36px; width:36px; border-radius:50%;
+  background:#DCE3F3; color:#1F3A63; font-weight:700;
+  display:grid; place-items:center;
+}
+.convo-row__main{ min-width:0; }
+.convo-row__head{ display:flex; justify-content:space-between; gap:8px; }
+.convo-row__name{ font-weight:700; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.convo-row__time{ color:var(--muted); font-size:12px; }
+.convo-row__snippet{ color:var(--muted); font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+.pill{
+  font-size:12px;
+  border-radius:999px;
+  padding:2px 8px;
+  background:#F1F5FF;
+  color:#1E3A8A;
+  border:1px solid #D6E2FF;
+}
+
+/* ---------- Right: Thread ---------- */
+.thread-head{
+  display:flex; justify-content:space-between; align-items:center;
+  padding-bottom:8px; border-bottom:1px solid #eef2f7;
+}
+.thread-head__title{ margin:0; }
+
+.messages{
+  flex:1; overflow:auto; padding:12px; margin-top:8px; background:#fff;
+}
+
+.bubble{ margin-bottom:12px; }
+.bubble__content{
+  display:inline-block;
+  padding:10px 14px;
+  border-radius:16px;
+  max-width:70%;
+  word-break:break-word;
+  box-shadow:0 1px 1px rgba(0,0,0,.04);
+}
+.bubble--in .bubble__content{
+  background:var(--incoming);
+  color:var(--ink);
+}
+.bubble--out{ text-align:right; }
+.bubble--out .bubble__content{
+  background:var(--outgoing);
+  color:#fff;
+}
+.bubble__meta{
+  font-size:11px; color:var(--muted); margin-top:4px;
+}
+
+/* ---------- Composer ---------- */
+.composer{
+  margin-top:8px; display:flex; gap:8px; align-items:flex-end;
+}
+.composer__input{
+  flex:1;
+  border-radius:10px;
+  padding:10px;
+  border:1px solid var(--surface);
+  resize:none;
+  outline:none;
+}
+
+/* ---------- Buttons ---------- */
+.btn{
+  border:none;
+  border-radius:10px;
+  padding:10px 14px;
+  font-weight:600;
+  cursor:pointer;
+}
+.btn-accent{ background:var(--accent); color:#fff; }
+
+/* ---------- Utilities ---------- */
+.muted{ color:var(--muted); }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1100px){
+  .shell--drrmo{ grid-template-columns:240px 280px 1fr; }
+}
+@media (max-width: 900px){
+  .shell--drrmo{ grid-template-columns:240px 1fr; }
+  .panel--middle{ display:none; }
+}
+@media (max-width: 640px){
+  .shell--drrmo, .shell--barangay{ grid-template-columns:1fr; }
+  .panel--left{ display:none; }
+}

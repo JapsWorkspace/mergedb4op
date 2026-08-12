@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "983525885901",
+    "project_id": "sagipbayan-ebd61",
+    "storage_bucket": "sagipbayan-ebd61.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:983525885901:android:0e18d3b35ea11dcb18e684",
+        "android_client_info": {
+          "package_name": "com.noelmateo.SagipBayan"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDW5fGeNduBjd0Jwb_OniQ_slraMnDrTh4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
