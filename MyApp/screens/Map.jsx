@@ -31,6 +31,7 @@ import MapView, {
 import { Picker } from "@react-native-picker/picker";
 import { useFocusEffect, useNavigation, useRoute } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
 import * as turf from "@turf/turf";
 
@@ -115,7 +116,7 @@ const NAV_PANEL_COLLAPSED_OFFSET = Math.max(
   Math.round(NAV_PANEL_HEIGHT - NAV_PANEL_PEEK_HEIGHT)
 );
 const NAV_PANEL_HALF_OFFSET = Math.round(NAV_PANEL_COLLAPSED_OFFSET / 2);
-const NAV_PANEL_DEFAULT_OFFSET = NAV_PANEL_HALF_OFFSET;
+const NAV_PANEL_DEFAULT_OFFSET = Math.min(42, NAV_PANEL_HALF_OFFSET);
 const NAV_PANEL_MAX_OFFSET = NAV_PANEL_COLLAPSED_OFFSET;
 const INCIDENT_IMAGE_LIMIT = 2;
 const INCIDENT_IMAGE_MAX_BYTES = 15 * 1024 * 1024;
@@ -815,6 +816,11 @@ function getBarangayFillColor(index = 0) {
   return `hsla(${hue}, ${saturation}%, ${lightness}%, 0.54)`;
 }
 
+function getBarangaySelectedFillColor(index = 0) {
+  const { hue, saturation, lightness } = getBarangayColorParts(index);
+  return `hsla(${hue}, ${Math.min(92, saturation + 6)}%, ${lightness}%, 0.7)`;
+}
+
 function getBarangayOutlineColor(index = 0) {
   const { hue, saturation, lightness } = getBarangayColorParts(index);
   return `hsl(${hue}, ${Math.min(88, saturation + 8)}%, ${Math.max(34, lightness - 8)}%)`;
@@ -1470,6 +1476,28 @@ function NavigationArrowMarker({ heading = 0 }) {
   );
 }
 
+function RouteDestinationMarker() {
+  return (
+    <View style={styles.routeDestinationShell} collapsable={false}>
+      <View style={styles.routeDestinationFlag}>
+        {Array.from({ length: 12 }, (_, index) => (
+          <View
+            key={`destination-check-${index}`}
+            style={[
+              styles.routeDestinationCheck,
+              (Math.floor(index / 4) + (index % 4)) % 2 === 0
+                ? styles.routeDestinationCheckDark
+                : styles.routeDestinationCheckLight,
+            ]}
+          />
+        ))}
+      </View>
+      <View style={styles.routeDestinationStem} />
+      <View style={styles.routeDestinationDot} />
+    </View>
+  );
+}
+
 function getForecastAtmosphere(weather) {
   const hour = new Date().getHours();
   const condition = String(weather?.current?.condition || "").toLowerCase();
@@ -1661,7 +1689,7 @@ function EvacuationPlaceMarker({ color, selected = false, label, badge = "" }) {
   );
 }
 
-function IncidentListItem({ incident, onPress }) {
+function IncidentListItem({ incident, onPress, themedOverlay }) {
   const level = String(incident?.level || "low").toLowerCase();
   const levelColor = INCIDENT_LEVEL_COLOR[level] || "#16a34a";
   const statusLabel = normalizeIncidentStatus(incident?.status) || "reported";
@@ -1676,7 +1704,7 @@ function IncidentListItem({ incident, onPress }) {
 
   return (
     <TouchableOpacity
-      style={styles.incidentListItem}
+      style={[styles.incidentListItem, themedOverlay?.card]}
       activeOpacity={0.86}
       onPress={onPress}
       disabled={typeof onPress !== "function"}
@@ -1686,7 +1714,7 @@ function IncidentListItem({ incident, onPress }) {
       </View>
       <View style={styles.incidentListCopy}>
         <View style={styles.incidentListTitleRow}>
-          <Text style={styles.incidentListTitle} numberOfLines={1}>
+          <Text style={[styles.incidentListTitle, themedOverlay?.text]} numberOfLines={1}>
             {safeDisplayText(incident?.type, "Incident")}
           </Text>
           <View style={[styles.incidentStatusChip, { borderColor: levelColor }]}>
@@ -1695,14 +1723,14 @@ function IncidentListItem({ incident, onPress }) {
             </Text>
           </View>
         </View>
-        <Text style={styles.incidentListMeta} numberOfLines={1}>
+        <Text style={[styles.incidentListMeta, themedOverlay?.subtext]} numberOfLines={1}>
           {safeDisplayText(incident?.location, "Location not provided")}
         </Text>
-        <Text style={styles.incidentListSubMeta} numberOfLines={1}>
+        <Text style={[styles.incidentListSubMeta, themedOverlay?.subtext]} numberOfLines={1}>
           {safeDisplayText(incident?.barangay, "Unknown barangay")} | {Number(incident?.latitude).toFixed(5)}, {Number(incident?.longitude).toFixed(5)}
         </Text>
         {!!incident?.description && (
-          <Text style={styles.incidentListDescription} numberOfLines={2}>
+          <Text style={[styles.incidentListDescription, themedOverlay?.text]} numberOfLines={2}>
             {safeDisplayText(incident.description, "No description")}
           </Text>
         )}
@@ -1946,6 +1974,7 @@ export default function Map() {
   const lastPlaceKeyRef = useRef(null);
   const { user } = useContext(UserContext) || {};
   const { theme } = useTheme();
+  const safeAreaInsets = useSafeAreaInsets();
   const themedOverlay = useMemo(() => createMapOverlayThemeStyles(theme), [theme]);
 
   const [mongoBarangays, setMongoBarangays] = useState(null);
@@ -2537,7 +2566,7 @@ const {
         zoom: NAV_ZOOM,
         pitch: NAV_PITCH,
       },
-      { duration: 450 }
+      { duration: 420 }
     );
 
     return { heading, nextPoint, snappedLocation };
@@ -2844,7 +2873,7 @@ const homepageBarangays = useMemo(() => {
         mainRing,
         color: getBarangayOutlineColor(index, totalFeatures),
         fillColor: getBarangaySoftFillColor(index, totalFeatures),
-        selectedFillColor: getBarangayFillColor(index, totalFeatures),
+        selectedFillColor: getBarangaySelectedFillColor(index, totalFeatures),
       };
     })
     .filter(Boolean);
@@ -3129,6 +3158,13 @@ const clearBarangayVisibilityFilter = useCallback(() => {
     () => toMarkerCoordinate(normalizedSelectedEvac),
     [normalizedSelectedEvac]
   );
+  const routeDestinationCoordinate = useMemo(() => {
+    const coordinates = safeArray(activeNavigationRoute?.coords).filter((coordinate) =>
+      isValidCoordinate(coordinate?.latitude, coordinate?.longitude)
+    );
+
+    return selectedEvacCoordinate || coordinates[coordinates.length - 1];
+  }, [activeNavigationRoute, selectedEvacCoordinate]);
 const visibleIncidentMarkers = useMemo(() => {
   if (!(isIncident && selectedBarangay)) return normalizedIncidents;
 
@@ -3287,6 +3323,25 @@ const shouldShowIncidentMarkers =
     setRouteRequested,
     setRoutes,
   ]);
+
+  const handlePanelFullyDismiss = useCallback(
+    (dismissedModule) => {
+      if (dismissedModule !== "barangay") return;
+
+      navigation.setParams({
+        module: undefined,
+        barangay: undefined,
+      });
+      setSelectedBarangay(null);
+      setSelectedBarangayIds([]);
+      setBarangaySpecificMode(false);
+      setShowBarangayMarkers(false);
+      setActiveMapModule("incident");
+      setPanelState("HIDDEN");
+      mapRef.current?.animateToRegion(JAEN_INITIAL_REGION, 260);
+    },
+    [navigation, setActiveMapModule, setPanelState]
+  );
 
   const handleEvacMarkerPress = useCallback(
     (place) => {
@@ -3969,13 +4024,13 @@ if (!incidentDebugMode && !currentLocationFeature) {
     const strokeColor =
       isBarangay || isEvacBarangayLayer
         ? isVisibilityMuted
-          ? "rgba(15, 23, 42, 0.34)"
+          ? "rgba(148, 163, 158, 0.34)"
           : barangay.color
         : heatStyle.strokeColor;
     const fillColor =
       isBarangay || isEvacBarangayLayer
         ? isVisibilityMuted
-          ? "rgba(15, 23, 42, 0.22)"
+          ? "rgba(8, 20, 15, 0.64)"
           : isVisibilitySelected
             ? barangay.selectedFillColor
             : barangay.fillColor
@@ -4021,7 +4076,13 @@ if (!incidentDebugMode && !currentLocationFeature) {
           />
         )}
         <Polygon
-          key={`home-brgy-${barangay.id}`}
+          key={`home-brgy-${barangay.id}-${
+            isBarangaySelectionMode
+              ? isVisibilitySelected
+                ? "selected"
+                : "muted"
+              : "normal"
+          }`}
           coordinates={barangay.mainRing}
           strokeColor={strokeColor}
           strokeWidth={strokeWidth}
@@ -4075,6 +4136,8 @@ if (!incidentDebugMode && !currentLocationFeature) {
             const isSelected = Boolean(
               normalizedSelectedEvac?._id && normalizedSelectedEvac._id === place._id
             );
+
+            if (routeRequested && isSelected) return null;
 
             return (
               <SafeMarker
@@ -4205,6 +4268,23 @@ if (!incidentDebugMode && !currentLocationFeature) {
             );
           })}
 
+        {isEvac && (routes.length > 0 || isNavigating) && routeDestinationCoordinate && (
+          <Marker
+            key="evac-route-destination"
+            coordinate={routeDestinationCoordinate}
+            anchor={{ x: 0.5, y: 0.96 }}
+            zIndex={1450}
+            tracksViewChanges={true}
+            title="Route destination"
+            description={safeDisplayText(
+              normalizedSelectedEvac?.name,
+              "Evacuation center"
+            )}
+          >
+            <RouteDestinationMarker />
+          </Marker>
+        )}
+
         {isEvac && isNavigating && userCoordinate && (
           <SafeMarker
             key="navigation-user-arrow"
@@ -4219,7 +4299,17 @@ if (!incidentDebugMode && !currentLocationFeature) {
       </MapView>
 
       {isEvac && isNavigating && (
-        <View style={[styles.wazeTopOverlay, themedOverlay.navigationTop]} pointerEvents="auto">
+        <View
+          style={[
+            styles.wazeTopOverlay,
+            themedOverlay.navigationTop,
+            {
+              minHeight: safeAreaInsets.top + 64,
+              paddingTop: safeAreaInsets.top + 8,
+            },
+          ]}
+          pointerEvents="auto"
+        >
           <View style={[styles.wazeTopTurnIcon, themedOverlay.softCard]}>
             <Ionicons
               name={navigationTopSummary.maneuverIcon || "arrow-up"}
@@ -4255,6 +4345,7 @@ if (!incidentDebugMode && !currentLocationFeature) {
           themedOverlay={themedOverlay}
           activeModule={activeModule}
           onBack={handleBack}
+          onFullyDismiss={handlePanelFullyDismiss}
           incidentDraft={incidentDraft}
           setIncidentDraft={setIncidentDraft}
           incidentImage={incidentImage}
@@ -4345,6 +4436,7 @@ function ModulePanel({
   themedOverlay,
   activeModule,
   onBack,
+  onFullyDismiss,
   incidentDraft,
   setIncidentDraft,
   incidentImage,
@@ -4443,13 +4535,21 @@ function ModulePanel({
   }, [activeModule, barangayFilterOpen, onBack, selectedBarangayIds, setBarangaySpecificMode]);
   const [showStopConfirm, setShowStopConfirm] = useState(false);
   const [isPanelHidden, setIsPanelHidden] = useState(false);
+  const activeModuleRef = useRef(activeModule);
+  const onFullyDismissRef = useRef(onFullyDismiss);
   const lastNavigationPanelY = useRef(NAV_PANEL_DEFAULT_OFFSET);
   const isNavigationPanelActiveRef = useRef(false);
   const formScrollRef = useRef(null);
+  const evacScrollRef = useRef(null);
   const inputY = useRef({});
   const fieldFocusTimerRef = useRef(null);
   const formScrollMountedRef = useRef(true);
   const incidentFocusedFieldRef = useRef(null);
+
+  useEffect(() => {
+    activeModuleRef.current = activeModule;
+    onFullyDismissRef.current = onFullyDismiss;
+  }, [activeModule, onFullyDismiss]);
 
   useEffect(() => {
     setIsMapPanelOpen(true);
@@ -4583,6 +4683,7 @@ function ModulePanel({
     typeof panelY === "number"
       ? Math.max(PANEL_MIN_OFFSET, Math.min(currentPanelMaxOffset, panelY))
       : currentPanelDefaultOffset;
+  const panelContentBottomInset = Math.max(24, initialPanelY + 24);
   const translateY = useRef(new Animated.Value(initialPanelY)).current;
   const lastY = useRef(initialPanelY);
   const localPanelSnapRef = useRef(false);
@@ -4705,6 +4806,13 @@ function ModulePanel({
         const willHide = finalY >= panelMaxOffsetRef.current;
         setIsPanelHidden(false);
         setIsMapPanelOpen(!willHide);
+        if (willHide) {
+          const dismissedModule = activeModuleRef.current;
+          if (dismissedModule === "barangay") {
+            setBarangayFilterOpen(false);
+          }
+          onFullyDismissRef.current?.(dismissedModule);
+        }
         Animated.spring(translateY, {
           toValue: finalY,
           stiffness: 220,
@@ -4778,13 +4886,14 @@ function ModulePanel({
     setIsNavigating(true);
     setFollowMode(true);
     setPanelState("NAVIGATION");
-    const nextPanelY = Math.max(
-      PANEL_MIN_OFFSET,
-      Math.min(NAV_PANEL_MAX_OFFSET, lastNavigationPanelY.current)
-    );
+    const nextPanelY = NAV_PANEL_DEFAULT_OFFSET;
+    lastNavigationPanelY.current = nextPanelY;
     setPanelY(nextPanelY);
     lastY.current = nextPanelY;
     translateY.setValue(nextPanelY);
+    requestAnimationFrame(() => {
+      evacScrollRef.current?.scrollTo({ y: 0, animated: false });
+    });
   };
 
   const performStopNavigation = () => {
@@ -4973,36 +5082,39 @@ function ModulePanel({
           activeOpacity={0.88}
           style={[
             styles.incidentToggleBtn,
+            themedOverlay.softCard,
             incidentPanelTab === "report" && styles.incidentToggleBtnActive,
           ]}
           onPress={() => setIncidentPanelTab("report")}
         >
-          <Ionicons name="create-outline" size={18} color={incidentPanelTab === "report" ? "#FFFFFF" : "#14532D"} />
-          <Text style={[styles.incidentToggleText, incidentPanelTab === "report" && styles.incidentToggleTextActive]}>Report</Text>
+          <Ionicons name="create-outline" size={18} color={incidentPanelTab === "report" ? "#FFFFFF" : theme.primary} />
+          <Text style={[styles.incidentToggleText, themedOverlay.primaryText, incidentPanelTab === "report" && styles.incidentToggleTextActive]}>Report</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           activeOpacity={0.88}
           style={[
             styles.incidentToggleBtn,
+            themedOverlay.softCard,
             incidentPanelTab === "reports" && styles.incidentToggleBtnActive,
           ]}
           onPress={() => setIncidentPanelTab("reports")}
         >
-          <Ionicons name="list-outline" size={18} color={incidentPanelTab === "reports" ? "#FFFFFF" : "#14532D"} />
-          <Text style={[styles.incidentToggleText, incidentPanelTab === "reports" && styles.incidentToggleTextActive]}>Reports</Text>
+          <Ionicons name="list-outline" size={18} color={incidentPanelTab === "reports" ? "#FFFFFF" : theme.primary} />
+          <Text style={[styles.incidentToggleText, themedOverlay.primaryText, incidentPanelTab === "reports" && styles.incidentToggleTextActive]}>Reports</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           activeOpacity={0.88}
           style={[
             styles.incidentToggleBtn,
+            themedOverlay.softCard,
             incidentPanelTab === "map" && styles.incidentToggleBtnActive,
           ]}
           onPress={() => setIncidentPanelTab("map")}
         >
-          <Ionicons name="map-outline" size={18} color={incidentPanelTab === "map" ? "#FFFFFF" : "#14532D"} />
-          <Text style={[styles.incidentToggleText, incidentPanelTab === "map" && styles.incidentToggleTextActive]}>Map</Text>
+          <Ionicons name="map-outline" size={18} color={incidentPanelTab === "map" ? "#FFFFFF" : theme.primary} />
+          <Text style={[styles.incidentToggleText, themedOverlay.primaryText, incidentPanelTab === "map" && styles.incidentToggleTextActive]}>Map</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -5019,7 +5131,7 @@ function ModulePanel({
       <Ionicons
         name={incidentDebugMode ? "bug" : "bug-outline"}
         size={18}
-        color={incidentDebugMode ? "#FFFFFF" : "#14532D"}
+        color={incidentDebugMode ? "#FFFFFF" : theme.primary}
       />
       <Text
         style={[
@@ -5058,9 +5170,9 @@ function ModulePanel({
           )}
         </View>
 
-        <View style={styles.panelSection}>
-          <Text style={styles.sectionLabel}>Incident type</Text>
-          <Picker selectedValue={incidentDraft.type} onValueChange={(value) => setIncidentDraft((prev) => ({ ...prev, type: value }))} style={styles.picker}>
+        <View style={[styles.panelSection, themedOverlay.section]}>
+          <Text style={[styles.sectionLabel, themedOverlay.text]}>Incident type</Text>
+          <Picker selectedValue={incidentDraft.type} onValueChange={(value) => setIncidentDraft((prev) => ({ ...prev, type: value }))} style={[styles.picker, themedOverlay.input]} dropdownIconColor={theme.text}>
             <Picker.Item label="Select incident type" value="" />
             <Picker.Item label="Flood" value="flood" />
             <Picker.Item label="Typhoon" value="typhoon" />
@@ -5069,8 +5181,8 @@ function ModulePanel({
           </Picker>
           {!!incidentErrors?.type && <Text style={styles.validationText}>{incidentErrors.type}</Text>}
 
-          <Text style={styles.label}>Severity</Text>
-          <Picker selectedValue={incidentDraft.level} onValueChange={(value) => setIncidentDraft((prev) => ({ ...prev, level: value }))} style={styles.picker}>
+          <Text style={[styles.label, themedOverlay.text]}>Severity</Text>
+          <Picker selectedValue={incidentDraft.level} onValueChange={(value) => setIncidentDraft((prev) => ({ ...prev, level: value }))} style={[styles.picker, themedOverlay.input]} dropdownIconColor={theme.text}>
             <Picker.Item label="Select severity" value="" />
             <Picker.Item label="Low" value="low" />
             <Picker.Item label="Medium" value="medium" />
@@ -5081,15 +5193,15 @@ function ModulePanel({
         </View>
 
         <View
-          style={styles.panelSection}
+          style={[styles.panelSection, themedOverlay.section]}
           onLayout={(event) => {
             inputY.current.addressSection = event.nativeEvent.layout.y;
           }}
         >
-          <Text style={styles.sectionLabel}>Address</Text>
+          <Text style={[styles.sectionLabel, themedOverlay.text]}>Address</Text>
 
-          <Text style={styles.label}>District</Text>
-          <View style={styles.input}>
+          <Text style={[styles.label, themedOverlay.text]}>District</Text>
+          <View style={[styles.input, themedOverlay.input]}>
             <Picker
               selectedValue={incidentDraft.district}
               onValueChange={(value) =>
@@ -5107,7 +5219,8 @@ function ModulePanel({
                       : "",
                 }))
               }
-              style={{ color: incidentDraft.district ? "#10251B" : "#94A3B8" }}
+              style={{ color: incidentDraft.district ? theme.text : theme.subtext }}
+              dropdownIconColor={theme.text}
             >
               <Picker.Item label="Select district" value="" />
               {getPickerOptionsWithCurrent(
@@ -5119,8 +5232,8 @@ function ModulePanel({
           </View>
           {!!incidentErrors?.district && <Text style={styles.validationText}>{incidentErrors.district}</Text>}
 
-          <Text style={styles.label}>Barangay</Text>
-          <View style={styles.input}>
+          <Text style={[styles.label, themedOverlay.text]}>Barangay</Text>
+          <View style={[styles.input, themedOverlay.input]}>
             <Picker
               selectedValue={incidentDraft.barangay}
               enabled={Boolean(incidentDraft.district || incidentDraft.barangay)}
@@ -5138,7 +5251,8 @@ function ModulePanel({
                 );
                 if (matchedBarangay) handleSelectBarangay(matchedBarangay);
               }}
-              style={{ color: incidentDraft.barangay ? "#10251B" : "#94A3B8", opacity: incidentDraft.district || incidentDraft.barangay ? 1 : 0.6 }}
+              style={{ color: incidentDraft.barangay ? theme.text : theme.subtext, opacity: incidentDraft.district || incidentDraft.barangay ? 1 : 0.6 }}
+              dropdownIconColor={theme.text}
             >
               <Picker.Item label={incidentDraft.district || incidentDraft.barangay ? "Select barangay" : "Select district first"} value="" />
               {getPickerOptionsWithCurrent(
@@ -5150,10 +5264,11 @@ function ModulePanel({
           </View>
           {!!incidentErrors?.barangay && <Text style={styles.validationText}>{incidentErrors.barangay}</Text>}
 
-          <Text style={styles.label}>Street / Landmark / Details</Text>
+          <Text style={[styles.label, themedOverlay.text]}>Street / Landmark / Details</Text>
           <TextInput
-            style={[styles.input, styles.locationInput]}
+            style={[styles.input, styles.locationInput, themedOverlay.input]}
             placeholder="House no., street, purok, landmark"
+            placeholderTextColor={theme.subtext}
             value={incidentDraft.street}
             onFocus={() => focusIncidentField("street")}
             onBlur={() => blurIncidentField("street")}
@@ -5165,12 +5280,12 @@ function ModulePanel({
           />
           {!!incidentErrors?.street && <Text style={styles.validationText}>{incidentErrors.street}</Text>}
 
-          <TouchableOpacity style={[styles.locationActionBtn, incidentLocating && styles.disabledBtn]} disabled={incidentLocating} onPress={useCurrentIncidentLocation}>
-            <Ionicons name="navigate-outline" size={15} color="#14532D" />
-            <Text style={styles.locationActionText}>{incidentLocating ? "Getting location..." : "Use My Current Location"}</Text>
+          <TouchableOpacity style={[styles.locationActionBtn, themedOverlay.softCard, incidentLocating && styles.disabledBtn]} disabled={incidentLocating} onPress={useCurrentIncidentLocation}>
+            <Ionicons name="navigate-outline" size={15} color={theme.primary} />
+            <Text style={[styles.locationActionText, themedOverlay.primaryText]}>{incidentLocating ? "Getting location..." : "Use My Current Location"}</Text>
           </TouchableOpacity>
 
-          <Text style={styles.locationStatusText}>
+          <Text style={[styles.locationStatusText, themedOverlay.subtext]}>
             {selectedIncidentCoordinate
               ? incidentDebugMode
                 ? "Debug map point set for this report."
@@ -5181,9 +5296,9 @@ function ModulePanel({
           </Text>
           {!!incidentErrors?.location && <Text style={styles.validationText}>{incidentErrors.location}</Text>}
 
-          <View style={styles.addressPreviewCard}>
-            <Text style={styles.addressPreviewLabel}>Full Address Preview</Text>
-            <Text style={styles.addressPreviewText}>
+          <View style={[styles.addressPreviewCard, themedOverlay.card]}>
+            <Text style={[styles.addressPreviewLabel, themedOverlay.subtext]}>Full Address Preview</Text>
+            <Text style={[styles.addressPreviewText, themedOverlay.text]}>
               {buildIncidentAddress({
                 district: incidentDraft.district,
                 barangay: incidentDraft.barangay,
@@ -5195,15 +5310,16 @@ function ModulePanel({
         </View>
 
         <View
-          style={styles.panelSection}
+          style={[styles.panelSection, themedOverlay.section]}
           onLayout={(event) => {
             inputY.current.notesSection = event.nativeEvent.layout.y;
           }}
         >
-          <Text style={styles.sectionLabel}>Notes and proof</Text>
+          <Text style={[styles.sectionLabel, themedOverlay.text]}>Notes and proof</Text>
           <TextInput
-            style={[styles.input, styles.textArea]}
+            style={[styles.input, styles.textArea, themedOverlay.input]}
             placeholder="Describe what happened"
+            placeholderTextColor={theme.subtext}
             multiline
             value={incidentDraft.description}
             onFocus={() => focusIncidentField("description")}
@@ -5217,20 +5333,21 @@ function ModulePanel({
           {!!incidentErrors?.description && <Text style={styles.validationText}>{incidentErrors.description}</Text>}
 
           <View style={styles.photoActionRow}>
-            <TouchableOpacity style={styles.photoActionBtn} onPress={pickIncidentImage}>
-              <Ionicons name="images-outline" size={16} color="#14532D" />
-              <Text style={styles.photoActionText}>Upload Photo</Text>
+            <TouchableOpacity style={[styles.photoActionBtn, themedOverlay.softCard]} onPress={pickIncidentImage}>
+              <Ionicons name="images-outline" size={16} color={theme.primary} />
+              <Text style={[styles.photoActionText, themedOverlay.primaryText]}>Upload Photo</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[
                 styles.photoActionBtn,
+                themedOverlay.softCard,
                 getIncidentImageItems(incidentImage).length >= INCIDENT_IMAGE_LIMIT && styles.disabledBtn,
               ]}
               disabled={getIncidentImageItems(incidentImage).length >= INCIDENT_IMAGE_LIMIT}
               onPress={takeIncidentPhoto}
             >
-              <Ionicons name="camera-outline" size={16} color="#14532D" />
-              <Text style={styles.photoActionText}>Take Photo</Text>
+              <Ionicons name="camera-outline" size={16} color={theme.primary} />
+              <Text style={[styles.photoActionText, themedOverlay.primaryText]}>Take Photo</Text>
             </TouchableOpacity>
           </View>
 
@@ -5269,22 +5386,22 @@ function ModulePanel({
     )}
 
     {incidentPanelTab === "reports" && (
-      <View style={styles.panelSection}>
+      <View style={[styles.panelSection, themedOverlay.section]}>
         <View style={styles.incidentBarangayHeader}>
           <View style={styles.incidentBarangayIcon}>
             <Ionicons name="newspaper-outline" size={17} color="#14532D" />
           </View>
           <View style={styles.incidentBarangayCopy}>
-            <Text style={styles.sectionLabel}>{selectedBarangay ? "Reports in barangay" : "Recent reports"}</Text>
-            <Text style={styles.panelNote}>{selectedBarangay ? "Only reports inside the selected barangay are shown." : "Showing the latest visible incident reports. Tap a report to center its marker."}</Text>
+            <Text style={[styles.sectionLabel, themedOverlay.text]}>{selectedBarangay ? "Reports in barangay" : "Recent reports"}</Text>
+            <Text style={[styles.panelNote, themedOverlay.subtext]}>{selectedBarangay ? "Only reports inside the selected barangay are shown." : "Showing the latest visible incident reports. Tap a report to center its marker."}</Text>
           </View>
         </View>
 
         {safeArray(incidents).length === 0 ? (
-          <View style={styles.emptyIncidentState}>
+          <View style={[styles.emptyIncidentState, themedOverlay.card]}>
             <Ionicons name="checkmark-circle-outline" size={24} color="#14532D" />
-            <Text style={styles.emptyIncidentTitle}>No incidents found</Text>
-            <Text style={styles.emptyIncidentText}>{selectedBarangay ? "There are no reports inside this barangay right now." : "No incident reports are currently visible."}</Text>
+            <Text style={[styles.emptyIncidentTitle, themedOverlay.text]}>No incidents found</Text>
+            <Text style={[styles.emptyIncidentText, themedOverlay.subtext]}>{selectedBarangay ? "There are no reports inside this barangay right now." : "No incident reports are currently visible."}</Text>
           </View>
         ) : (
           safeArray(incidents).slice(0, 6).map((incident) => (
@@ -5292,6 +5409,7 @@ function ModulePanel({
               key={incident?._id || `${incident.latitude}-${incident.longitude}`}
               incident={incident}
               onPress={() => onIncidentPress?.(incident)}
+              themedOverlay={themedOverlay}
             />
           ))
         )}
@@ -5300,14 +5418,14 @@ function ModulePanel({
 
     {incidentPanelTab === "map" && (
       <>
-        <View style={styles.panelSection}>
+        <View style={[styles.panelSection, themedOverlay.section]}>
           <View style={styles.incidentBarangayHeader}>
             <View style={styles.incidentBarangayIcon}>
               <Ionicons name="map-outline" size={17} color="#14532D" />
             </View>
             <View style={styles.incidentBarangayCopy}>
-              <Text style={styles.sectionLabel}>Barangay map view</Text>
-              <Text style={styles.panelNote}>{selectedBarangay ? "The map is focused on the selected barangay." : "Tap a barangay outline or label to focus the report view."}</Text>
+              <Text style={[styles.sectionLabel, themedOverlay.text]}>Barangay map view</Text>
+              <Text style={[styles.panelNote, themedOverlay.subtext]}>{selectedBarangay ? "The map is focused on the selected barangay." : "Tap a barangay outline or label to focus the report view."}</Text>
             </View>
           </View>
           {selectedBarangay && (
@@ -5317,20 +5435,20 @@ function ModulePanel({
           )}
         </View>
 
-        <View style={styles.panelSection}>
-          <Text style={styles.sectionLabel}>Map visibility</Text>
+        <View style={[styles.panelSection, themedOverlay.section]}>
+          <Text style={[styles.sectionLabel, themedOverlay.text]}>Map visibility</Text>
           <View style={styles.mapToggleGrid}>
-            <TouchableOpacity activeOpacity={0.88} style={[styles.mapToggleBtn, showBarangayMarkers && styles.mapToggleBtnActive]} onPress={() => setShowBarangayMarkers((prev) => !prev)}>
-              <Ionicons name="pricetag-outline" size={17} color={showBarangayMarkers ? "#FFFFFF" : "#14532D"} />
-              <Text style={[styles.mapToggleText, showBarangayMarkers && styles.mapToggleTextActive]}>Barangay Labels</Text>
+            <TouchableOpacity activeOpacity={0.88} style={[styles.mapToggleBtn, themedOverlay.softCard, showBarangayMarkers && styles.mapToggleBtnActive]} onPress={() => setShowBarangayMarkers((prev) => !prev)}>
+              <Ionicons name="pricetag-outline" size={17} color={showBarangayMarkers ? "#FFFFFF" : theme.primary} />
+              <Text style={[styles.mapToggleText, themedOverlay.primaryText, showBarangayMarkers && styles.mapToggleTextActive]}>Barangay Labels</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity activeOpacity={0.88} style={[styles.mapToggleBtn, showIncidentMarkers && styles.mapToggleBtnActive]} onPress={() => setShowIncidentMarkers((prev) => !prev)}>
-              <Ionicons name="warning-outline" size={17} color={showIncidentMarkers ? "#FFFFFF" : "#14532D"} />
-              <Text style={[styles.mapToggleText, showIncidentMarkers && styles.mapToggleTextActive]}>Incident Pins</Text>
+            <TouchableOpacity activeOpacity={0.88} style={[styles.mapToggleBtn, themedOverlay.softCard, showIncidentMarkers && styles.mapToggleBtnActive]} onPress={() => setShowIncidentMarkers((prev) => !prev)}>
+              <Ionicons name="warning-outline" size={17} color={showIncidentMarkers ? "#FFFFFF" : theme.primary} />
+              <Text style={[styles.mapToggleText, themedOverlay.primaryText, showIncidentMarkers && styles.mapToggleTextActive]}>Incident Pins</Text>
             </TouchableOpacity>
           </View>
-          <Text style={styles.panelNote}>These controls only affect Incident Reporting. Evac Places keeps incident pins hidden.</Text>
+          <Text style={[styles.panelNote, themedOverlay.subtext]}>These controls only affect Incident Reporting. Evac Places keeps incident pins hidden.</Text>
         </View>
       </>
     )}
@@ -5415,11 +5533,13 @@ function ModulePanel({
         {activeModule === "barangay" && (
           <ScrollView
             style={styles.panelScroll}
+            contentContainerStyle={{ paddingBottom: panelContentBottomInset }}
             showsVerticalScrollIndicator={false}
             stickyHeaderIndices={[0]}
             nestedScrollEnabled
             directionalLockEnabled
-            keyboardShouldPersistTaps="handled"
+            keyboardShouldPersistTaps="always"
+            removeClippedSubviews={false}
           >
             <PanelHeader
               theme={theme}
@@ -5439,21 +5559,21 @@ function ModulePanel({
                 {barangaySpecificMode && (
                   <TouchableOpacity
                     activeOpacity={0.82}
-                    style={styles.barangayClearChip}
+                    style={[styles.barangayClearChip, themedOverlay.softCard]}
                     onPress={() => {
                       onClearBarangayVisibilityFilter?.();
                       setBarangaySpecificMode?.(false);
                       setBarangayFilterOpen(false);
                     }}
                   >
-                    <Text style={styles.barangayClearChipText}>Show all</Text>
+                    <Text style={[styles.barangayClearChipText, themedOverlay.primaryText]}>Show all</Text>
                   </TouchableOpacity>
                 )}
               </View>
 
               <TouchableOpacity
                 activeOpacity={0.88}
-                style={styles.barangayFilterButton}
+                style={[styles.barangayFilterButton, themedOverlay.card]}
                 onPress={() => {
                   setBarangayFilterOpen((prev) => {
                     const nextOpen = !prev;
@@ -5464,18 +5584,18 @@ function ModulePanel({
                   });
                 }}
               >
-                <View style={styles.barangayFilterButtonIcon}>
-                  <Ionicons name="layers-outline" size={18} color="#14532D" />
+                <View style={[styles.barangayFilterButtonIcon, themedOverlay.softCard]}>
+                  <Ionicons name="layers-outline" size={18} color={theme.primary} />
                 </View>
                 <View style={styles.barangayFilterButtonCopy}>
-                  <Text style={styles.barangayFilterButtonTitle}>
+                  <Text style={[styles.barangayFilterButtonTitle, themedOverlay.text]}>
                     {barangaySpecificMode
                       ? (selectedBarangayIds || []).length
                         ? `${selectedBarangayIds.length} selected`
                         : "Choose specific barangays"
                       : "Show all barangays"}
                   </Text>
-                  <Text style={styles.barangayFilterButtonMeta}>
+                  <Text style={[styles.barangayFilterButtonMeta, themedOverlay.subtext]}>
                     {barangaySpecificMode
                       ? "Unselected areas become muted"
                       : "Tap to choose specific barangays"}
@@ -5484,7 +5604,7 @@ function ModulePanel({
                 <Ionicons
                   name={barangayFilterOpen ? "chevron-up" : "chevron-down"}
                   size={20}
-                  color="#14532D"
+                  color={theme.primary}
                 />
               </TouchableOpacity>
 
@@ -5499,8 +5619,9 @@ function ModulePanel({
                         activeOpacity={0.86}
                         style={[
                           styles.barangayChoiceChip,
+                          themedOverlay.card,
                           active && {
-                            backgroundColor: "#FFFFFF",
+                            backgroundColor: barangay.selectedFillColor,
                             borderColor: barangay.color,
                             borderWidth: 2,
                           },
@@ -5517,7 +5638,8 @@ function ModulePanel({
                           numberOfLines={1}
                           style={[
                             styles.barangayChoiceText,
-                            active && { color: "#10251B" },
+                            themedOverlay.text,
+                            active && { color: "#07140D", fontWeight: "900" },
                           ]}
                         >
                           {barangay.label}
@@ -5529,30 +5651,30 @@ function ModulePanel({
               )}
 
 
-              <View style={styles.incidentToggleRow}>
+              <View style={[styles.incidentToggleRow, styles.barangayToggleRow]}>
                 <TouchableOpacity
                   activeOpacity={0.88}
-                  style={[styles.mapToggleBtn, showBarangayMarkers && styles.mapToggleBtnActive]}
+                  style={[styles.mapToggleBtn, themedOverlay.softCard, showBarangayMarkers && styles.mapToggleBtnActive]}
                   onPress={() => setShowBarangayMarkers((prev) => !prev)}
                 >
-                  <Ionicons name="pricetag-outline" size={17} color={showBarangayMarkers ? "#FFFFFF" : "#14532D"} />
-                  <Text style={[styles.mapToggleText, showBarangayMarkers && styles.mapToggleTextActive]}>Barangay Labels</Text>
+                  <Ionicons name="pricetag-outline" size={17} color={showBarangayMarkers ? "#FFFFFF" : theme.primary} />
+                  <Text style={[styles.mapToggleText, themedOverlay.primaryText, showBarangayMarkers && styles.mapToggleTextActive]}>Barangay Labels</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   activeOpacity={0.88}
-                  style={[styles.mapToggleBtn, showIncidentMarkers && styles.mapToggleBtnActive]}
+                  style={[styles.mapToggleBtn, themedOverlay.softCard, showIncidentMarkers && styles.mapToggleBtnActive]}
                   onPress={() => setShowIncidentMarkers((prev) => !prev)}
                 >
-                  <Ionicons name="warning-outline" size={17} color={showIncidentMarkers ? "#FFFFFF" : "#14532D"} />
-                  <Text style={[styles.mapToggleText, showIncidentMarkers && styles.mapToggleTextActive]}>Incident Pins</Text>
+                  <Ionicons name="warning-outline" size={17} color={showIncidentMarkers ? "#FFFFFF" : theme.primary} />
+                  <Text style={[styles.mapToggleText, themedOverlay.primaryText, showIncidentMarkers && styles.mapToggleTextActive]}>Incident Pins</Text>
                 </TouchableOpacity>
               </View>
             </View>
 
             <View style={[styles.panelSection, themedOverlay.section]}>
               <Text style={[styles.sectionLabel, themedOverlay.text]}>Map style</Text>
-              <LegendRow color={homepageBarangays[0]?.color || "#22C55E"} label="All barangays use their assigned colors by default" />
-              <LegendRow color="rgba(15, 23, 42, 0.34)" label="Specific mode mutes unselected barangays" />
+              <LegendRow themedOverlay={themedOverlay} color={homepageBarangays[0]?.color || "#22C55E"} label="All barangays use their assigned colors by default" />
+              <LegendRow themedOverlay={themedOverlay} color="rgba(15, 23, 42, 0.34)" label="Specific mode mutes unselected barangays" />
               <Text style={[styles.panelNote, themedOverlay.subtext]}>
                 Show all keeps the entire Jaen map visible. Specific selection focuses only the chosen barangays.
               </Text>
@@ -5562,12 +5684,15 @@ function ModulePanel({
 
         {activeModule === "evac" && (
           <ScrollView
+            ref={evacScrollRef}
             style={styles.panelScroll}
             showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: panelContentBottomInset }}
             stickyHeaderIndices={!isNavigating ? [0] : undefined}
             nestedScrollEnabled
             directionalLockEnabled
             keyboardShouldPersistTaps="always"
+            removeClippedSubviews={false}
           >
             {!isNavigating && (
               <PanelHeader
@@ -5736,7 +5861,7 @@ function ModulePanel({
                     </TouchableOpacity>
                   ))}
                 </ScrollView>
-                <View style={styles.listSection}>
+                <View style={[styles.listSection, themedOverlay.listSection]}>
                   {evacPlacesByStatus.limited.length > 0 && (
                     <View style={styles.evacSection}>
                       <Text style={[styles.evacSectionTitle, themedOverlay.subtext]}>Limited capacity</Text>
@@ -5938,6 +6063,7 @@ function ModulePanel({
                             styles.routeCard,
                             themedOverlay.card,
                             route.isRecommended && styles.routeRecommended,
+                            route.isRecommended && themedOverlay.recommendedCard,
                           ]}
                           onPress={() => setActiveRoute(route)}
                         >
@@ -6245,11 +6371,11 @@ function QuickIncidentReportModal({
   );
 }
 
-function LegendRow({ color, label }) {
+function LegendRow({ color, label, themedOverlay }) {
   return (
-    <View style={styles.legendRow}>
+    <View style={[styles.legendRow, themedOverlay?.card]}>
       <View style={[styles.legendSwatch, { backgroundColor: color }]} />
-      <Text style={styles.legendText}>{label}</Text>
+      <Text style={[styles.legendText, themedOverlay?.text]}>{label}</Text>
     </View>
   );
 }
@@ -6293,8 +6419,17 @@ function createMapOverlayThemeStyles(theme) {
       backgroundColor: theme.primarySoft,
       borderColor: theme.border,
     },
+    input: {
+      backgroundColor: theme.inputBackground,
+      borderColor: theme.border,
+      color: theme.text,
+    },
     section: {
       backgroundColor: theme.card,
+      borderColor: theme.border,
+    },
+    listSection: {
+      backgroundColor: theme.mode === "dark" ? "#10251B" : "#f6faf8",
       borderColor: theme.border,
     },
     floatingButton: {
@@ -6533,6 +6668,67 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 3 },
     elevation: 7,
     zIndex: 2,
+  },
+
+  routeDestinationShell: {
+    width: 58,
+    height: 72,
+    alignItems: "center",
+    justifyContent: "flex-end",
+    overflow: "visible",
+  },
+
+  routeDestinationFlag: {
+    position: "absolute",
+    top: 2,
+    left: 18,
+    width: 38,
+    height: 30,
+    borderRadius: 3,
+    borderWidth: 2,
+    borderColor: "#FFFFFF",
+    backgroundColor: "#FFFFFF",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    overflow: "hidden",
+    shadowColor: "#000000",
+    shadowOpacity: 0.32,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 9,
+    zIndex: 3,
+  },
+
+  routeDestinationCheck: {
+    width: "25%",
+    height: "33.333%",
+  },
+
+  routeDestinationCheckDark: {
+    backgroundColor: "#111111",
+  },
+
+  routeDestinationCheckLight: {
+    backgroundColor: "#FFFFFF",
+  },
+
+  routeDestinationStem: {
+    position: "absolute",
+    top: 1,
+    left: 16,
+    width: 4,
+    height: 64,
+    borderRadius: 2,
+    backgroundColor: "#111111",
+    borderWidth: 1,
+    borderColor: "#FFFFFF",
+  },
+
+  routeDestinationDot: {
+    width: 16,
+    height: 8,
+    borderRadius: 999,
+    backgroundColor: "rgba(17,17,17,0.42)",
   },
 
   switcher: {
@@ -7669,7 +7865,7 @@ barangayIncidentTooltipText: {
     alignItems: "flex-start",
     justifyContent: "space-between",
     gap: 12,
-    marginBottom: 12,
+    marginBottom: 16,
   },
 
   barangayFilterTitleBlock: {
@@ -7695,15 +7891,15 @@ barangayIncidentTooltipText: {
   },
 
   barangayFilterButton: {
-    minHeight: 62,
+    minHeight: 70,
     borderRadius: 18,
     backgroundColor: "#FFFFFF",
     borderWidth: 1,
     borderColor: "#D9E8DF",
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 12,
-    gap: 10,
+    paddingHorizontal: 14,
+    gap: 12,
   },
 
   barangayFilterButtonIcon: {
@@ -7736,20 +7932,29 @@ barangayIncidentTooltipText: {
   barangayChoiceGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 8,
-    marginTop: 12,
+    columnGap: 12,
+    rowGap: 12,
+    marginTop: 16,
+    marginBottom: 18,
   },
 
   barangayChoiceChip: {
-    width: "48%",
-    minHeight: 40,
-    borderRadius: 14,
+    width: "47.5%",
+    minHeight: 48,
+    borderRadius: 16,
     backgroundColor: "#F8FBF9",
     borderWidth: 1,
     borderColor: "#E2ECE6",
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+
+  barangayToggleRow: {
+    gap: 12,
+    marginTop: 16,
+    marginBottom: 4,
   },
 
   barangayChoiceChipActive: {

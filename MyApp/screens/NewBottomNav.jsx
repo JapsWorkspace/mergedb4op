@@ -51,7 +51,7 @@ const MODULES = [
 ];
 
 const ITEM_WIDTH = 180;
-const HORIZONTAL_DRAG_THRESHOLD = 16;
+const HORIZONTAL_DRAG_THRESHOLD = 5;
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
@@ -302,12 +302,17 @@ export default function NewBottomNav() {
     () =>
       PanResponder.create({
         onStartShouldSetPanResponder: () => false,
-        onMoveShouldSetPanResponderCapture: (_, gesture) =>
-          Math.abs(gesture.dx) > HORIZONTAL_DRAG_THRESHOLD &&
-          Math.abs(gesture.dx) > Math.abs(gesture.dy) * 1.35,
+        onMoveShouldSetPanResponderCapture: (_, gesture) => {
+          const isHorizontalDrag =
+            Math.abs(gesture.dx) > HORIZONTAL_DRAG_THRESHOLD &&
+            Math.abs(gesture.dx) > Math.abs(gesture.dy) * 1.08;
+
+          if (isHorizontalDrag) lockBottomNavGesture();
+          return isHorizontalDrag;
+        },
         onMoveShouldSetPanResponder: (_, gesture) =>
           Math.abs(gesture.dx) > HORIZONTAL_DRAG_THRESHOLD &&
-          Math.abs(gesture.dx) > Math.abs(gesture.dy) * 1.35,
+          Math.abs(gesture.dx) > Math.abs(gesture.dy) * 1.08,
         onPanResponderGrant: () => {
           lockBottomNavGesture();
           setIsDragging(true);

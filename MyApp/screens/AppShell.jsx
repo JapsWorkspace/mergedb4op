@@ -311,13 +311,20 @@ export default function AppShell() {
                     focus: () => setCurrentScreen("MainCenter"),
                   }}
                 />
-                <Stack.Screen
+<Stack.Screen
   name="DigitalTwin"
   component={DigitalTwinScreen}
   listeners={{
     focus: () => setCurrentScreen("DigitalTwin"),
   }}
 />
+                <Stack.Screen
+                  name="VirtualTwin"
+                  component={DigitalTwinScreen}
+                  listeners={{
+                    focus: () => setCurrentScreen("VirtualTwin"),
+                  }}
+                />
                 <Stack.Screen
                   name="Profile"
                   component={Profile}
@@ -390,7 +397,10 @@ export default function AppShell() {
         )}
 
         {showBottomNav && (
-          <View style={styles.navWrapper} pointerEvents="auto">
+          <View
+            style={styles.navWrapper}
+            pointerEvents={isMapPanelOpen ? "none" : "auto"}
+          >
             <NewBottomNav />
           </View>
         )}

@@ -9,41 +9,28 @@ import {
   Platform,
 } from "react-native";
 import { WebView } from "react-native-webview";
-import { DrawerActions } from "@react-navigation/native";
+import { Ionicons } from "@expo/vector-icons";
 
-const UNITY_WEBGL_URL = "https://sagipbayan.com/digital-twin-mobile";
+const DIGITAL_TWIN_URL = "https://sagipbayan.com/digital-twin-mobile";
+const VIRTUAL_TWIN_URL = "https://sagipbayan.com/flood-virtual-twin-mobile";
 
-export default function DigitalTwinScreen({ navigation }) {
+export default function DigitalTwinScreen({ navigation, route }) {
   const webViewRef = useRef(null);
+  const isVirtualTwin = route?.name === "VirtualTwin";
+  const simulationUrl = isVirtualTwin ? VIRTUAL_TWIN_URL : DIGITAL_TWIN_URL;
+  const featureName = isVirtualTwin ? "Virtual Twin" : "Digital Twin";
 
   const [loading, setLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [controlsVisible, setControlsVisible] = useState(true);
 
-  const openAppDrawer = () => {
-    try {
-      let currentNavigation = navigation;
-
-      while (currentNavigation) {
-        const state = currentNavigation.getState?.();
-
-        if (state?.type === "drawer") {
-          currentNavigation.dispatch(DrawerActions.openDrawer());
-          return;
-        }
-
-        currentNavigation = currentNavigation.getParent?.();
-      }
-
-      // Fallback if this screen is not inside Drawer.Navigator
-      if (navigation?.goBack) {
-        navigation.goBack();
-      } else {
-        console.log("Drawer navigator not found.");
-      }
-    } catch (error) {
-      console.log("Open drawer error:", error);
+  const goBack = () => {
+    if (navigation?.canGoBack?.()) {
+      navigation.goBack();
+      return;
     }
+
+    navigation?.navigate?.("MainCenter");
   };
 
   const reloadSimulation = () => {
@@ -127,7 +114,7 @@ export default function DigitalTwinScreen({ navigation }) {
       {!hasError && (
         <WebView
           ref={webViewRef}
-          source={{ uri: UNITY_WEBGL_URL }}
+          source={{ uri: simulationUrl }}
           javaScriptEnabled={true}
           domStorageEnabled={true}
           originWhitelist={["*"]}
@@ -174,15 +161,17 @@ export default function DigitalTwinScreen({ navigation }) {
           <View style={styles.header}>
             <TouchableOpacity
               style={styles.roundButton}
-              onPress={openAppDrawer}
+              onPress={goBack}
               activeOpacity={0.85}
+              accessibilityRole="button"
+              accessibilityLabel="Go back"
             >
-              <Text style={styles.menuIcon}>☰</Text>
+              <Ionicons name="arrow-back" size={25} color="#ffffff" />
             </TouchableOpacity>
 
             <View style={styles.headerTitleBox}>
               <Text style={styles.headerEyebrow}>SagipBayan</Text>
-              <Text style={styles.headerTitle}>Digital Twin</Text>
+              <Text style={styles.headerTitle}>{featureName}</Text>
             </View>
 
             <TouchableOpacity
@@ -202,7 +191,9 @@ export default function DigitalTwinScreen({ navigation }) {
           <View style={styles.bottomControl}>
             <View>
               <Text style={styles.bottomLabel}>Current View</Text>
-              <Text style={styles.bottomTitle}>Real-time Water Level Model</Text>
+              <Text style={styles.bottomTitle}>
+                {isVirtualTwin ? "Interactive Flood Virtual Map" : "Real-time Water Level Model"}
+              </Text>
             </View>
 
             <TouchableOpacity
@@ -231,7 +222,7 @@ export default function DigitalTwinScreen({ navigation }) {
           <View style={styles.loadingCard}>
             <ActivityIndicator size="large" color="#f97316" />
 
-            <Text style={styles.loadingTitle}>Loading Digital Twin</Text>
+            <Text style={styles.loadingTitle}>Loading {featureName}</Text>
 
             <Text style={styles.loadingSubtitle}>
               Preparing the Unity flood simulation...
@@ -244,10 +235,12 @@ export default function DigitalTwinScreen({ navigation }) {
         <View style={styles.errorScreen}>
           <TouchableOpacity
             style={styles.errorMenuButton}
-            onPress={openAppDrawer}
+            onPress={goBack}
             activeOpacity={0.85}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
           >
-            <Text style={styles.menuIcon}>☰</Text>
+            <Ionicons name="arrow-back" size={25} color="#ffffff" />
           </TouchableOpacity>
 
           <View style={styles.errorContent}>
@@ -255,11 +248,11 @@ export default function DigitalTwinScreen({ navigation }) {
               <Text style={styles.errorIcon}>!</Text>
             </View>
 
-            <Text style={styles.errorTitle}>Digital Twin unavailable</Text>
+            <Text style={styles.errorTitle}>{featureName} unavailable</Text>
 
             <Text style={styles.errorMessage}>
               The Unity WebGL simulation could not be loaded. Please check your
-              internet connection or verify the Digital Twin link.
+              internet connection or verify the {featureName} link.
             </Text>
 
             <TouchableOpacity
@@ -272,10 +265,10 @@ export default function DigitalTwinScreen({ navigation }) {
 
             <TouchableOpacity
               style={styles.drawerButton}
-              onPress={openAppDrawer}
+              onPress={goBack}
               activeOpacity={0.85}
             >
-              <Text style={styles.drawerButtonText}>Open Menu</Text>
+              <Text style={styles.drawerButtonText}>Go Back</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -339,12 +332,6 @@ const styles = StyleSheet.create({
     borderColor: GLASS_BORDER,
     justifyContent: "center",
     alignItems: "center",
-  },
-
-  menuIcon: {
-    color: "#ffffff",
-    fontSize: 22,
-    fontWeight: "900",
   },
 
   reloadIcon: {
