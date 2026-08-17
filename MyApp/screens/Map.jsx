@@ -82,13 +82,23 @@ const NAV_ZOOM = 18.5;
 const NAV_PITCH = 55;
 const NAV_CAMERA_HEADING_OFFSET = 0;
 const NAV_CAMERA_THROTTLE_MS = 900;
+const MODULE_DISMISS_LOCK_MS = 180;
 
 const JAEN_INITIAL_REGION = {
-  latitude: 15.32,
-  longitude: 120.92,
+  // Geometric center of the complete Jaen municipality boundary. Keeping the
+  // startup camera here prevents the boundary from opening clipped in the
+  // upper-left corner on both fresh launch and exploration-limit resets.
+  latitude: 15.379677352616156,
+  longitude: 120.87703455602895,
   latitudeDelta: 0.12,
   longitudeDelta: 0.12,
 };
+const MAP_MAX_LATITUDE_DELTA = 0.3;
+const MAP_MAX_LONGITUDE_DELTA = 0.3;
+// Allow users to explore well beyond Jaen before returning to the default
+// frame. This preserves a useful safety limit without making nearby panning
+// feel like the map is fighting the gesture.
+const MAP_MIN_EXPLORATION_MARGIN = 0.09;
 
 const USER_POS = {
   latitude: 15.38,
@@ -2036,6 +2046,8 @@ const {
   const previousRouteOriginRef = useRef(USER_POS);
   const evacRouteManualCameraRef = useRef(false);
   const evacRouteAutoFitKeyRef = useRef("");
+  const moduleDismissCameraTimerRef = useRef(null);
+  const isModuleDismissTransitionRef = useRef(false);
   const [isNavigating, setIsNavigating] = useState(false);
   const [followMode, setFollowMode] = useState(false);
   const [currentHeading, setCurrentHeading] = useState(0);
@@ -2043,6 +2055,9 @@ const {
   const [nextRoutePoint, setNextRoutePoint] = useState(null);
   const [currentSpeedKmh, setCurrentSpeedKmh] = useState(0);
   const [routeHazardBanner, setRouteHazardBanner] = useState(null);
+  const [isPanelGestureActive, setIsPanelGestureActive] = useState(false);
+  const [isModuleDismissTransitioning, setIsModuleDismissTransitioning] = useState(false);
+  const [isReturningToIncidentMap, setIsReturningToIncidentMap] = useState(false);
   const routeStartCoordinate = useMemo(() => {
     const gpsCoordinate = toMarkerCoordinate(gpsLocation);
     return evacGpsDebugMode && gpsCoordinate ? gpsCoordinate : USER_POS;
@@ -2052,12 +2067,13 @@ const {
     ? navRoute.params.module
     : null;
   const activeModule = activeMapModule;
-  const showMapWeather = !activeModule && panelState !== "NAVIGATION";
-  const isEvac = activeModule === "evac";
+  const showMapWeather =
+    isReturningToIncidentMap || (!activeModule && panelState !== "NAVIGATION");
+  const isEvac = activeModule === "evac" && !isReturningToIncidentMap;
   const isIncident = activeModule === "incident";
-  const isFlood = activeModule === "flood";
-  const isEarthquake = activeModule === "earthquake";
-  const isBarangay = activeModule === "barangay";
+  const isFlood = activeModule === "flood" && !isReturningToIncidentMap;
+  const isEarthquake = activeModule === "earthquake" && !isReturningToIncidentMap;
+  const isBarangay = activeModule === "barangay" && !isReturningToIncidentMap;
 
   useEffect(() => {
     recentModuleChangeRef.current = Date.now();
@@ -2191,7 +2207,8 @@ const {
     setRoutes,
   ]);
 
-  const showHomepageBarangays = !activeModule || isIncident || isEvac || isBarangay;
+  const showHomepageBarangays =
+    isReturningToIncidentMap || !activeModule || isIncident || isEvac || isBarangay;
   const showBarangayNameMarkers =
     showBarangayMarkers && (showHomepageBarangays || isBarangay || isEvac);
 
@@ -2440,6 +2457,7 @@ const {
   const updateNavigationCamera = useCallback(
     (force = false) => {
       if (
+        isModuleDismissTransitionRef.current ||
         !isEvac ||
         !isNavigating ||
         (!followMode && !force) ||
@@ -2534,6 +2552,9 @@ const {
       if (recenterTimerRef.current) {
         clearTimeout(recenterTimerRef.current);
       }
+      if (moduleDismissCameraTimerRef.current) {
+        clearTimeout(moduleDismissCameraTimerRef.current);
+      }
     };
   }, []);
 
@@ -2591,6 +2612,7 @@ const {
     ].join(":");
 
     if (
+      !isModuleDismissTransitionRef.current &&
       panelState !== "NAVIGATION" &&
       !evacRouteManualCameraRef.current &&
       evacRouteAutoFitKeyRef.current !== routeCameraKey
@@ -3324,23 +3346,84 @@ const shouldShowIncidentMarkers =
     setRoutes,
   ]);
 
+  const handlePanelDismissStart = useCallback((dismissedModule) => {
+    if (["barangay", "flood", "earthquake", "evac"].includes(dismissedModule)) {
+      // Begin restoring the lightweight Incident presentation while the sheet
+      // is still moving, rather than waiting for its spring to finish.
+      setIsReturningToIncidentMap(true);
+    }
+  }, []);
+
   const handlePanelFullyDismiss = useCallback(
     (dismissedModule) => {
-      if (dismissedModule !== "barangay") return;
+      if (!["barangay", "flood", "earthquake", "evac"].includes(dismissedModule)) {
+        return;
+      }
+
+      if (recenterTimerRef.current) {
+        clearTimeout(recenterTimerRef.current);
+        recenterTimerRef.current = null;
+      }
+      if (evacSelectionRecenterTimerRef.current) {
+        clearTimeout(evacSelectionRecenterTimerRef.current);
+        evacSelectionRecenterTimerRef.current = null;
+      }
+      if (moduleDismissCameraTimerRef.current) {
+        clearTimeout(moduleDismissCameraTimerRef.current);
+      }
+
+      isModuleDismissTransitionRef.current = true;
+      setIsModuleDismissTransitioning(true);
+
+      moduleDismissCameraTimerRef.current = setTimeout(() => {
+        moduleDismissCameraTimerRef.current = null;
+        isModuleDismissTransitionRef.current = false;
+        setIsModuleDismissTransitioning(false);
+      }, MODULE_DISMISS_LOCK_MS);
 
       navigation.setParams({
         module: undefined,
+        evacPlace: undefined,
         barangay: undefined,
+        place: undefined,
       });
+
+      setEvac(null);
+      setRouteRequested(false);
+      setRoutes([]);
+      setActiveRoute(null);
+      setIsNavigating(false);
+      setFollowMode(false);
+      setNextRoutePoint(null);
+      setRouteHazardBanner(null);
+      evacRouteManualCameraRef.current = false;
+      evacRouteAutoFitKeyRef.current = "";
+      routeHazardAlertedRef.current.clear();
+
       setSelectedBarangay(null);
       setSelectedBarangayIds([]);
       setBarangaySpecificMode(false);
       setShowBarangayMarkers(false);
-      setActiveMapModule("incident");
+      setShowIncidentMarkers(false);
+      setShowFloodMap(false);
+      setShowEarthquakeHazard(false);
+      setActiveMapModule(null);
       setPanelState("HIDDEN");
-      mapRef.current?.animateToRegion(JAEN_INITIAL_REGION, 260);
+      setPanelY(PANEL_MAX_OFFSET);
+      setIsReturningToIncidentMap(false);
     },
-    [navigation, setActiveMapModule, setPanelState]
+    [
+      navigation,
+      setActiveMapModule,
+      setActiveRoute,
+      setEvac,
+      setPanelState,
+      setPanelY,
+      setRouteRequested,
+      setRoutes,
+      setShowEarthquakeHazard,
+      setShowFloodMap,
+    ]
   );
 
   const handleEvacMarkerPress = useCallback(
@@ -3929,6 +4012,8 @@ if (!incidentDebugMode && !currentLocationFeature) {
 
   const handleRegionChangeComplete = useCallback(
     (region) => {
+      if (isModuleDismissTransitionRef.current) return;
+
       if (isClampingRegionRef.current) {
         isClampingRegionRef.current = false;
         return;
@@ -3938,51 +4023,20 @@ if (!incidentDebugMode && !currentLocationFeature) {
         return;
       }
 
-      const latitudeDelta = Math.min(
-        region.latitudeDelta,
-        JAEN_INITIAL_REGION.latitudeDelta
+      const isTooFarZoomedOut =
+        region.latitudeDelta > MAP_MAX_LATITUDE_DELTA ||
+        region.longitudeDelta > MAP_MAX_LONGITUDE_DELTA;
+      const isOutsideExplorationArea = Boolean(
+        jaenBounds &&
+          (region.latitude < jaenBounds.minLat - MAP_MIN_EXPLORATION_MARGIN ||
+            region.latitude > jaenBounds.maxLat + MAP_MIN_EXPLORATION_MARGIN ||
+            region.longitude < jaenBounds.minLng - MAP_MIN_EXPLORATION_MARGIN ||
+            region.longitude > jaenBounds.maxLng + MAP_MIN_EXPLORATION_MARGIN)
       );
-      const longitudeDelta = Math.min(
-        region.longitudeDelta,
-        JAEN_INITIAL_REGION.longitudeDelta
-      );
 
-      let latitude = region.latitude;
-      let longitude = region.longitude;
-
-      if (jaenBounds) {
-        const latInset = latitudeDelta / 2;
-        const lngInset = longitudeDelta / 2;
-
-        latitude = clamp(
-          region.latitude,
-          jaenBounds.minLat + latInset,
-          jaenBounds.maxLat - latInset
-        );
-        longitude = clamp(
-          region.longitude,
-          jaenBounds.minLng + lngInset,
-          jaenBounds.maxLng - lngInset
-        );
-      }
-
-      if (
-        latitudeDelta !== region.latitudeDelta ||
-        longitudeDelta !== region.longitudeDelta ||
-        latitude !== region.latitude ||
-        longitude !== region.longitude
-      ) {
+      if (isTooFarZoomedOut || isOutsideExplorationArea) {
         isClampingRegionRef.current = true;
-        mapRef.current?.animateToRegion(
-          {
-            ...region,
-            latitude,
-            longitude,
-            latitudeDelta,
-            longitudeDelta,
-          },
-          160
-        );
+        mapRef.current?.animateToRegion(JAEN_INITIAL_REGION, 260);
       }
     },
     [isEvac, jaenBounds]
@@ -3995,15 +4049,15 @@ if (!incidentDebugMode && !currentLocationFeature) {
         provider={Platform.OS === "android" ? PROVIDER_GOOGLE : undefined}
         style={styles.map}
         initialRegion={JAEN_INITIAL_REGION}
-        minZoomLevel={11}
+        minZoomLevel={10}
         showsUserLocation={false}
         showsMyLocationButton={false}
         toolbarEnabled={false}
         customMapStyle={[]}
-        scrollEnabled={!isBottomNavInteracting}
-        zoomEnabled={!isBottomNavInteracting}
-        rotateEnabled={panelState === "NAVIGATION" && !isBottomNavInteracting}
-        pitchEnabled={panelState === "NAVIGATION" && !isBottomNavInteracting}
+        scrollEnabled={!isBottomNavInteracting && !isPanelGestureActive && !isModuleDismissTransitioning && !isReturningToIncidentMap}
+        zoomEnabled={!isBottomNavInteracting && !isPanelGestureActive && !isModuleDismissTransitioning && !isReturningToIncidentMap}
+        rotateEnabled={panelState === "NAVIGATION" && !isBottomNavInteracting && !isPanelGestureActive && !isModuleDismissTransitioning && !isReturningToIncidentMap}
+        pitchEnabled={panelState === "NAVIGATION" && !isBottomNavInteracting && !isPanelGestureActive && !isModuleDismissTransitioning && !isReturningToIncidentMap}
         onPress={handleMapPress}
         onPanDrag={pauseFollowForManualPan}
         onRegionChangeComplete={handleRegionChangeComplete}
@@ -4333,11 +4387,12 @@ if (!incidentDebugMode && !currentLocationFeature) {
       )}
 
 
-      {showMapWeather && (
-        <View style={styles.mapWeatherOverlay} pointerEvents="box-none">
-          <JaenWeatherForecast variant="map" onWeatherChange={handleWeatherChange} />
-        </View>
-      )}
+      <View
+        style={[styles.mapWeatherOverlay, !showMapWeather && styles.mapWeatherOverlayHidden]}
+        pointerEvents={showMapWeather ? "box-none" : "none"}
+      >
+        <JaenWeatherForecast variant="map" onWeatherChange={handleWeatherChange} />
+      </View>
 
       {activeModule && (
         <ModulePanel
@@ -4345,7 +4400,9 @@ if (!incidentDebugMode && !currentLocationFeature) {
           themedOverlay={themedOverlay}
           activeModule={activeModule}
           onBack={handleBack}
+          onDismissStart={handlePanelDismissStart}
           onFullyDismiss={handlePanelFullyDismiss}
+          onPanelGestureStateChange={setIsPanelGestureActive}
           incidentDraft={incidentDraft}
           setIncidentDraft={setIncidentDraft}
           incidentImage={incidentImage}
@@ -4436,7 +4493,9 @@ function ModulePanel({
   themedOverlay,
   activeModule,
   onBack,
+  onDismissStart,
   onFullyDismiss,
+  onPanelGestureStateChange,
   incidentDraft,
   setIncidentDraft,
   incidentImage,
@@ -4536,7 +4595,9 @@ function ModulePanel({
   const [showStopConfirm, setShowStopConfirm] = useState(false);
   const [isPanelHidden, setIsPanelHidden] = useState(false);
   const activeModuleRef = useRef(activeModule);
+  const onDismissStartRef = useRef(onDismissStart);
   const onFullyDismissRef = useRef(onFullyDismiss);
+  const onPanelGestureStateChangeRef = useRef(onPanelGestureStateChange);
   const lastNavigationPanelY = useRef(NAV_PANEL_DEFAULT_OFFSET);
   const isNavigationPanelActiveRef = useRef(false);
   const formScrollRef = useRef(null);
@@ -4548,8 +4609,10 @@ function ModulePanel({
 
   useEffect(() => {
     activeModuleRef.current = activeModule;
+    onDismissStartRef.current = onDismissStart;
     onFullyDismissRef.current = onFullyDismiss;
-  }, [activeModule, onFullyDismiss]);
+    onPanelGestureStateChangeRef.current = onPanelGestureStateChange;
+  }, [activeModule, onDismissStart, onFullyDismiss, onPanelGestureStateChange]);
 
   useEffect(() => {
     setIsMapPanelOpen(true);
@@ -4767,6 +4830,7 @@ function ModulePanel({
       onMoveShouldSetPanResponderCapture: () => false,
 
       onPanResponderGrant: () => {
+        onPanelGestureStateChangeRef.current?.(true);
         setIsPanelHidden(false);
         translateY.stopAnimation((value) => {
           lastY.current = Math.max(PANEL_MIN_OFFSET, Math.min(panelMaxOffsetRef.current, value));
@@ -4795,39 +4859,43 @@ function ModulePanel({
         );
         const projectedY = rawFinalY + Math.max(-44, Math.min(44, gesture.vy * 18));
         const finalY = getNearestSnapPoint(projectedY, panelSnapPointsRef.current);
+        const willHide = finalY >= panelMaxOffsetRef.current;
+        const settledY = willHide ? PANEL_MAX_OFFSET : finalY;
+        const dismissedModule = willHide ? activeModuleRef.current : null;
 
-        lastY.current = finalY;
+        lastY.current = settledY;
         if (isNavigationPanelActiveRef.current) {
           lastNavigationPanelY.current = finalY;
         }
         localPanelSnapRef.current = true;
-        setPanelY(finalY);
+        setPanelY(settledY);
 
-        const willHide = finalY >= panelMaxOffsetRef.current;
         setIsPanelHidden(false);
         setIsMapPanelOpen(!willHide);
+        onPanelGestureStateChangeRef.current?.(false);
+        if (dismissedModule === "barangay") {
+          setBarangayFilterOpen(false);
+        }
         if (willHide) {
-          const dismissedModule = activeModuleRef.current;
-          if (dismissedModule === "barangay") {
-            setBarangayFilterOpen(false);
-          }
-          onFullyDismissRef.current?.(dismissedModule);
+          onDismissStartRef.current?.(dismissedModule);
         }
         Animated.spring(translateY, {
-          toValue: finalY,
+          toValue: settledY,
           stiffness: 220,
           damping: 30,
           mass: 0.72,
           useNativeDriver: true,
-        }).start(({ finished }) => {
-          if (finished && finalY >= panelMaxOffsetRef.current) {
+        }).start(() => {
+          if (willHide) {
             setIsPanelHidden(true);
             setIsMapPanelOpen(false);
+            onFullyDismissRef.current?.(dismissedModule);
           }
         });
       },
 
       onPanResponderTerminate: () => {
+        onPanelGestureStateChangeRef.current?.(false);
         translateY.flattenOffset();
         translateY.setValue(lastY.current);
         if (isNavigationPanelActiveRef.current) {
@@ -6468,6 +6536,10 @@ const styles = StyleSheet.create({
     zIndex: 2200,
     elevation: 2200,
     pointerEvents: "box-none",
+  },
+
+  mapWeatherOverlayHidden: {
+    opacity: 0,
   },
 
   wazeTopOverlay: {
