@@ -29,22 +29,38 @@ function buildHtml(message) {
   ].join("");
 }
 
-function getConfiguredSender() {
-  const explicitSender = String(process.env.EMAIL_FROM || process.env.SMTP_FROM || "").trim();
-  const smtpUser = String(process.env.SMTP_USER || process.env.EMAIL_USER || "").trim();
+function buildFromAddress(sender) {
+  const cleanSender = String(sender || "").trim();
+  if (!cleanSender) return "";
+  return cleanSender.includes("<") ? cleanSender : `SAGIP BAYAN <${cleanSender}>`;
+}
 
-  if (explicitSender) return explicitSender;
-  if (smtpUser) return smtpUser;
+function getResendSender() {
+  const sender = String(process.env.EMAIL_FROM || process.env.RESEND_FROM || "").trim();
+  if (sender) return buildFromAddress(sender);
 
   const error = new Error(
-    "No email sender configured. Set EMAIL_FROM, SMTP_FROM, SMTP_USER, or EMAIL_USER on the deployed backend."
+    "Resend requires EMAIL_FROM or RESEND_FROM using a sender/domain verified in Resend."
   );
-  error.code = "EMAIL_CONFIG_MISSING";
+  error.code = "RESEND_CONFIG_MISSING";
   throw error;
 }
 
-function buildResendFromAddress(sender) {
-  return `SAGIP BAYAN <${sender}>`;
+function getSmtpSender() {
+  const smtpUser = String(process.env.SMTP_USER || process.env.EMAIL_USER || "").trim();
+  const smtpFrom = String(process.env.SMTP_FROM || "").trim();
+
+  // Gmail SMTP must send from the authenticated Gmail account (or an alias
+  // configured in that Gmail account). EMAIL_FROM may point to a custom
+  // domain intended for Resend, so it must not override the SMTP identity.
+  const sender = smtpFrom || smtpUser;
+  if (sender) return buildFromAddress(sender);
+
+  const error = new Error(
+    "No SMTP sender configured. Set SMTP_USER/EMAIL_USER and SMTP_PASS/EMAIL_PASS on the deployed backend."
+  );
+  error.code = "SMTP_CONFIG_MISSING";
+  throw error;
 }
 
 async function sendViaResend({ from, to, subject, html, text }) {
@@ -134,20 +150,18 @@ async function sendEmailNotification({ to, subject, message, html }) {
   try {
     console.log("[email sending]", { to, subject });
 
-    const sender = getConfiguredSender();
-    const from = buildResendFromAddress(sender);
     const preferResend = String(process.env.RESEND_API_KEY || "").trim();
 
     const info = preferResend
       ? await sendViaResend({
-          from,
+          from: getResendSender(),
           to,
           subject,
           html: resolvedHtml,
           text,
         })
       : await sendViaSmtp({
-          from,
+          from: getSmtpSender(),
           to,
           subject,
           html: resolvedHtml,
