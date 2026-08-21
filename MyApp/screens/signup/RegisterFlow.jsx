@@ -296,7 +296,7 @@ export default function RegisterFlow() {
 
       setModalMessage(
         result?.message ||
-          "Registration successful. Choose where you want to receive your OTP."
+          "Registration successful. Choose SMS OTP or an email verification link."
       );
       setShowModal(true);
     } catch (err) {
@@ -331,6 +331,28 @@ export default function RegisterFlow() {
 
   const startRegistrationOtp = async (channel) => {
     if (!registeredUserId || otpChannelLoading) return;
+
+    if (channel === "email") {
+      try {
+        setOtpChannelLoading(channel);
+        await api.post(`/user/${registeredUserId}/resend-verification-email`);
+        setEmailCooldown(60);
+        setEmailPollingMessage("");
+        setVerificationStep("email_notice");
+        setModalMessage("Verification link sent. Please check your email inbox.");
+        setShowModal(true);
+      } catch (err) {
+        setModalMessage(
+          err?.response?.data?.message ||
+            err?.response?.data?.error ||
+            "Unable to send the verification link. Please try again."
+        );
+        setShowModal(true);
+      } finally {
+        setOtpChannelLoading("");
+      }
+      return;
+    }
 
     const nextStep = channel === "sms" ? "phone" : "email";
     const purpose = channel === "sms" ? "registration_phone" : "registration_email";
@@ -514,9 +536,9 @@ export default function RegisterFlow() {
             <View style={styles.iconCircle}>
               <Ionicons name="shield-checkmark-outline" size={34} color="#166534" />
             </View>
-            <Text style={styles.verifyTitle}>Choose OTP Method</Text>
+            <Text style={styles.verifyTitle}>Choose Verification Method</Text>
             <Text style={styles.verifyText}>
-              Select where you want to receive your 6-digit verification code.
+              Receive a 6-digit code by SMS or a clickable verification link by email.
             </Text>
 
             <TouchableOpacity
@@ -549,7 +571,7 @@ export default function RegisterFlow() {
             >
               <Ionicons name="mail-outline" size={20} color="#166534" />
               <View style={styles.channelCopy}>
-                <Text style={styles.channelTitle}>Send via Email</Text>
+                <Text style={styles.channelTitle}>Send Email Verification Link</Text>
                 <Text style={styles.channelMeta}>{emailMasked || "Registered email address"}</Text>
               </View>
               {otpChannelLoading === "email" ? (
@@ -596,7 +618,7 @@ export default function RegisterFlow() {
             </View>
             <Text style={styles.verifyTitle}>Check Your Email</Text>
             <Text style={styles.verifyText}>
-              Your phone number has been verified. We sent a verification link to your registered email address. Please open your email and click the link to complete your registration.
+              We sent a verification link to your registered email address. Please open your email and click the link to complete your registration.
             </Text>
             <Text style={styles.verifySubtext}>
               This screen will continue automatically once your email is verified.

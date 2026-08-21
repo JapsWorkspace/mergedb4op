@@ -25,16 +25,10 @@ const MODULES = [
     icon: "warning-outline",
   },
   {
-    key: "flood",
-    label: "Flood Map",
+    key: "hazard",
+    label: "Hazard Map",
     helper: "Hazard",
-    icon: "water-outline",
-  },
-  {
-    key: "earthquake",
-    label: "Earthquake",
-    helper: "Risk",
-    icon: "pulse-outline",
+    icon: "warning-outline",
   },
   {
     key: "barangay",

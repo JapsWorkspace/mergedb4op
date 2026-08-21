@@ -90,6 +90,22 @@ export function sanitizeIncidentText(value, maxLength = INCIDENT_DESCRIPTION_MAX
   return sanitizeTextInput(value, { maxLength }).replace(/[^A-Za-z0-9\s,.\-()/#]/g, "");
 }
 
+// Notes are sanitized as the user types, so preserve trailing whitespace long
+// enough to allow normal multi-word input while removing unsupported symbols.
+export function sanitizeIncidentNotesInput(
+  value,
+  maxLength = INCIDENT_DESCRIPTION_MAX_LENGTH
+) {
+  const cleaned = asString(value)
+    .replace(INVISIBLE_WHITESPACE_REGEX, "")
+    .replace(/[^A-Za-z0-9\s,.\-()/#]/g, "")
+    .replace(/\s{3,}/g, "  ");
+
+  return typeof maxLength === "number" && maxLength >= 0
+    ? cleaned.slice(0, maxLength)
+    : cleaned;
+}
+
 export function sanitizeFreeTextInput(
   value,
   maxLength = INCIDENT_DESCRIPTION_MAX_LENGTH

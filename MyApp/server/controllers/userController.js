@@ -902,8 +902,8 @@ const registerUser = async (req, res) => {
     const user = await newUser.save();
 
     return res.status(201).json({
-      message: "Registration successful. Choose where you want to receive your OTP.",
-      nextStep: "choose_otp_channel",
+      message: "Registration successful. Choose SMS OTP or an email verification link.",
+      nextStep: "choose_verification_channel",
       userId: user._id,
       phoneMasked: maskPhone(user.phoneNumber || user.phone),
       emailMasked: maskEmail(user.email),
@@ -974,10 +974,9 @@ const verifyEmail = async (req, res) => {
     user.isEmailVerified = true;
     user.verificationToken = undefined;
     user.verificationTokenExpires = undefined;
-
-    if (user.isPhoneVerified === true) {
-      user.isVerified = true;
-    }
+    // Email-link verification is a complete registration method, just like
+    // successfully entering the SMS OTP selected on the mobile app.
+    user.isVerified = true;
 
     await user.save();
 

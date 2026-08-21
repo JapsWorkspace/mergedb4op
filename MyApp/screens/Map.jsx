@@ -59,6 +59,7 @@ import {
   normalizeCoordinate,
   sanitizeFreeTextInput,
   sanitizeFreeTextOnSubmit,
+  sanitizeIncidentNotesInput,
   sanitizeIncidentText,
   safeDisplayText,
   toNumber,
@@ -141,8 +142,7 @@ const INCIDENT_CLUSTER_MIN_BARANGAYS = 2;
 
 const MODULES = [
   { key: "incident", label: "Incident" },
-  { key: "flood", label: "Flood" },
-  { key: "earthquake", label: "Earthquake" },
+  { key: "hazard", label: "Hazard Map" },
   { key: "barangay", label: "Barangay" },
   { key: "evac", label: "Evac Place" },
 ];
@@ -2058,22 +2058,34 @@ const {
   const [isPanelGestureActive, setIsPanelGestureActive] = useState(false);
   const [isModuleDismissTransitioning, setIsModuleDismissTransitioning] = useState(false);
   const [isReturningToIncidentMap, setIsReturningToIncidentMap] = useState(false);
+  const [hazardMode, setHazardMode] = useState("flood");
   const routeStartCoordinate = useMemo(() => {
     const gpsCoordinate = toMarkerCoordinate(gpsLocation);
     return evacGpsDebugMode && gpsCoordinate ? gpsCoordinate : USER_POS;
   }, [evacGpsDebugMode, gpsLocation]);
 
-  const requestedModule = MODULES.some((item) => item.key === navRoute.params?.module)
-    ? navRoute.params.module
-    : null;
+  const requestedModuleParam = navRoute.params?.module;
+  const requestedModule = ["flood", "earthquake"].includes(requestedModuleParam)
+    ? "hazard"
+    : MODULES.some((item) => item.key === requestedModuleParam)
+      ? requestedModuleParam
+      : null;
   const activeModule = activeMapModule;
   const showMapWeather =
     isReturningToIncidentMap || (!activeModule && panelState !== "NAVIGATION");
   const isEvac = activeModule === "evac" && !isReturningToIncidentMap;
   const isIncident = activeModule === "incident";
-  const isFlood = activeModule === "flood" && !isReturningToIncidentMap;
-  const isEarthquake = activeModule === "earthquake" && !isReturningToIncidentMap;
+  const isFlood =
+    activeModule === "hazard" && hazardMode === "flood" && !isReturningToIncidentMap;
+  const isEarthquake =
+    activeModule === "hazard" && hazardMode === "earthquake" && !isReturningToIncidentMap;
   const isBarangay = activeModule === "barangay" && !isReturningToIncidentMap;
+
+  useEffect(() => {
+    if (["flood", "earthquake"].includes(requestedModuleParam)) {
+      setHazardMode(requestedModuleParam);
+    }
+  }, [requestedModuleParam]);
 
   useEffect(() => {
     recentModuleChangeRef.current = Date.now();
@@ -3347,7 +3359,7 @@ const shouldShowIncidentMarkers =
   ]);
 
   const handlePanelDismissStart = useCallback((dismissedModule) => {
-    if (["barangay", "flood", "earthquake", "evac"].includes(dismissedModule)) {
+    if (["barangay", "hazard", "flood", "earthquake", "evac"].includes(dismissedModule)) {
       // Begin restoring the lightweight Incident presentation while the sheet
       // is still moving, rather than waiting for its spring to finish.
       setIsReturningToIncidentMap(true);
@@ -3356,7 +3368,7 @@ const shouldShowIncidentMarkers =
 
   const handlePanelFullyDismiss = useCallback(
     (dismissedModule) => {
-      if (!["barangay", "flood", "earthquake", "evac"].includes(dismissedModule)) {
+      if (!["barangay", "hazard", "flood", "earthquake", "evac"].includes(dismissedModule)) {
         return;
       }
 
@@ -3827,7 +3839,7 @@ if (!incidentDebugMode && !currentLocationFeature) {
   const cleanDistrict = String(incidentDraft.district || "").trim();
   const cleanBarangay = String(incidentDraft.barangay || "").trim();
   const cleanStreet = sanitizeFreeTextOnSubmit(incidentDraft.street, 160);
-  const cleanDescription = sanitizeFreeTextOnSubmit(
+  const cleanDescription = sanitizeIncidentText(
     incidentDraft.description,
     INCIDENT_DESCRIPTION_MAX_LENGTH
   );
@@ -4399,6 +4411,8 @@ if (!incidentDebugMode && !currentLocationFeature) {
           theme={theme}
           themedOverlay={themedOverlay}
           activeModule={activeModule}
+          hazardMode={hazardMode}
+          setHazardMode={setHazardMode}
           onBack={handleBack}
           onDismissStart={handlePanelDismissStart}
           onFullyDismiss={handlePanelFullyDismiss}
@@ -4492,6 +4506,8 @@ function ModulePanel({
   theme,
   themedOverlay,
   activeModule,
+  hazardMode,
+  setHazardMode,
   onBack,
   onDismissStart,
   onFullyDismiss,
@@ -5139,10 +5155,38 @@ function ModulePanel({
 
     <View style={[styles.incidentToggleCard, themedOverlay.card]}>
       <View style={styles.incidentToggleHeader}>
-        <View>
+        <View style={styles.incidentToggleHeaderCopy}>
           <Text style={[styles.incidentToggleEyebrow, themedOverlay.subtext]}>Incident workspace</Text>
           <Text style={[styles.incidentToggleTitle, themedOverlay.text]}>Choose what you want to do</Text>
         </View>
+        <TouchableOpacity
+          activeOpacity={0.82}
+          accessibilityRole="switch"
+          accessibilityState={{ checked: showIncidentMarkers }}
+          accessibilityLabel="Show incident pins on map"
+          hitSlop={8}
+          style={[
+            styles.incidentPinsToggle,
+            themedOverlay.softCard,
+            showIncidentMarkers && styles.incidentPinsToggleActive,
+          ]}
+          onPress={() => setShowIncidentMarkers((visible) => !visible)}
+        >
+          <Ionicons
+            name={showIncidentMarkers ? "location" : "location-outline"}
+            size={16}
+            color={showIncidentMarkers ? "#FFFFFF" : theme.primary}
+          />
+          <Text
+            style={[
+              styles.incidentPinsToggleText,
+              themedOverlay.primaryText,
+              showIncidentMarkers && styles.incidentPinsToggleTextActive,
+            ]}
+          >
+            Pins {showIncidentMarkers ? "On" : "Off"}
+          </Text>
+        </TouchableOpacity>
       </View>
 
       <View style={styles.incidentToggleRow}>
@@ -5395,7 +5439,7 @@ function ModulePanel({
             onLayout={(event) => {
               inputY.current.description = event.nativeEvent.layout.y;
             }}
-            onChangeText={(value) => setIncidentDraft((prev) => ({ ...prev, description: sanitizeFreeTextInput(value, INCIDENT_DESCRIPTION_MAX_LENGTH) }))}
+            onChangeText={(value) => setIncidentDraft((prev) => ({ ...prev, description: sanitizeIncidentNotesInput(value, INCIDENT_DESCRIPTION_MAX_LENGTH) }))}
             maxLength={INCIDENT_DESCRIPTION_MAX_LENGTH}
           />
           {!!incidentErrors?.description && <Text style={styles.validationText}>{incidentErrors.description}</Text>}
@@ -5523,7 +5567,7 @@ function ModulePanel({
   </ScrollView>
 )}
 
-        {activeModule === "flood" && (
+        {activeModule === "hazard" && (
           <ScrollView
             style={styles.panelScroll}
             showsVerticalScrollIndicator={false}
@@ -5535,10 +5579,72 @@ function ModulePanel({
             <PanelHeader
               theme={theme}
               themedOverlay={themedOverlay}
-              title="Flood Map"
-              meta="Flood hazard overlay active"
+              title="Hazard Map"
+              meta={`${hazardMode === "earthquake" ? "Earthquake" : "Flood"} hazard overlay active`}
               onBack={handlePanelBack}
             />
+
+            <View style={[styles.panelSection, themedOverlay.section]}>
+              <Text style={[styles.sectionLabel, themedOverlay.text]}>Hazard type</Text>
+              <View style={styles.hazardModeToggleRow}>
+                <TouchableOpacity
+                  activeOpacity={0.86}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: hazardMode === "flood" }}
+                  style={[
+                    styles.hazardModeToggle,
+                    themedOverlay.softCard,
+                    hazardMode === "flood" && styles.hazardModeToggleActive,
+                  ]}
+                  onPress={() => setHazardMode("flood")}
+                >
+                  <Ionicons
+                    name="water-outline"
+                    size={18}
+                    color={hazardMode === "flood" ? "#FFFFFF" : theme.primary}
+                  />
+                  <Text
+                    style={[
+                      styles.hazardModeToggleText,
+                      themedOverlay.primaryText,
+                      hazardMode === "flood" && styles.hazardModeToggleTextActive,
+                    ]}
+                  >
+                    Flood Map
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  activeOpacity={0.86}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: hazardMode === "earthquake" }}
+                  style={[
+                    styles.hazardModeToggle,
+                    themedOverlay.softCard,
+                    hazardMode === "earthquake" && styles.hazardModeToggleActive,
+                  ]}
+                  onPress={() => setHazardMode("earthquake")}
+                >
+                  <Ionicons
+                    name="pulse-outline"
+                    size={18}
+                    color={hazardMode === "earthquake" ? "#FFFFFF" : theme.primary}
+                  />
+                  <Text
+                    style={[
+                      styles.hazardModeToggleText,
+                      themedOverlay.primaryText,
+                      hazardMode === "earthquake" && styles.hazardModeToggleTextActive,
+                    ]}
+                  >
+                    Earthquake Map
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {hazardMode === "flood" ? (
+              <>
             <View style={[styles.panelSection, themedOverlay.section]}>
               <Text style={[styles.sectionLabel, themedOverlay.text]}>Visible layers</Text>
               <LegendRow color="#065F46" label="Municipal boundary" />
@@ -5567,25 +5673,8 @@ function ModulePanel({
                 Legend colors match the current flood overlay palette used on the map.
               </Text>
             </View>
-          </ScrollView>
-        )}
-
-        {activeModule === "earthquake" && (
-          <ScrollView
-            style={styles.panelScroll}
-            showsVerticalScrollIndicator={false}
-            stickyHeaderIndices={[0]}
-            nestedScrollEnabled
-            directionalLockEnabled
-            keyboardShouldPersistTaps="handled"
-          >
-            <PanelHeader
-              theme={theme}
-              themedOverlay={themedOverlay}
-              title="Earthquake Map"
-              meta="Earthquake hazard overlay active"
-              onBack={handlePanelBack}
-            />
+              </>
+            ) : (
             <View style={[styles.panelSection, themedOverlay.section]}>
               <Text style={[styles.sectionLabel, themedOverlay.text]}>Risk overlay</Text>
               <LegendRow color="#dc2626" label="High-risk earthquake zone" />
@@ -5595,6 +5684,7 @@ function ModulePanel({
                 layers stay hidden unless their module is selected.
               </Text>
             </View>
+            )}
           </ScrollView>
         )}
 
@@ -6374,7 +6464,7 @@ function QuickIncidentReportModal({
               onChangeText={(value) =>
                 setIncidentDraft((prev) => ({
                   ...prev,
-                  description: sanitizeFreeTextInput(
+                  description: sanitizeIncidentNotesInput(
                     value,
                     INCIDENT_DESCRIPTION_MAX_LENGTH
                   ),
@@ -8582,6 +8672,38 @@ barangayIncidentTooltipText: {
     marginBottom: 10,
   },
 
+  incidentToggleHeaderCopy: {
+    flex: 1,
+    paddingRight: 8,
+  },
+
+  incidentPinsToggle: {
+    minHeight: 38,
+    paddingHorizontal: 11,
+    borderRadius: 13,
+    borderWidth: 1,
+    borderColor: "#BBF7D0",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 5,
+  },
+
+  incidentPinsToggleActive: {
+    backgroundColor: "#14532D",
+    borderColor: "#14532D",
+  },
+
+  incidentPinsToggleText: {
+    color: "#14532D",
+    fontSize: 11,
+    fontWeight: "900",
+  },
+
+  incidentPinsToggleTextActive: {
+    color: "#FFFFFF",
+  },
+
   incidentToggleEyebrow: {
     color: "#14532D",
     fontSize: 10,
@@ -8626,6 +8748,40 @@ barangayIncidentTooltipText: {
   },
 
   incidentToggleTextActive: {
+    color: "#FFFFFF",
+  },
+
+  hazardModeToggleRow: {
+    flexDirection: "row",
+    gap: 9,
+  },
+
+  hazardModeToggle: {
+    flex: 1,
+    minHeight: 50,
+    paddingHorizontal: 10,
+    borderRadius: 15,
+    borderWidth: 1,
+    borderColor: "#BBF7D0",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 7,
+  },
+
+  hazardModeToggleActive: {
+    backgroundColor: "#14532D",
+    borderColor: "#14532D",
+  },
+
+  hazardModeToggleText: {
+    color: "#14532D",
+    fontSize: 11,
+    fontWeight: "900",
+    textAlign: "center",
+  },
+
+  hazardModeToggleTextActive: {
     color: "#FFFFFF",
   },
 
