@@ -2572,6 +2572,33 @@ const getIncidentHistory = async (req, res) => {
   }
 };
 
+// Resident-facing report history associated with the submitting user's ID.
+// getIncidents remains public-only, so pending reports never become map pins.
+const getMyIncidentReports = async (req, res) => {
+  try {
+    const userId = String(req.params.userId || "").trim();
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ message: "A valid user ID is required." });
+    }
+
+    const reports = await IncidentModel.find({
+      reporterUserId: new mongoose.Types.ObjectId(userId),
+    })
+      .select(
+        "type level district barangay street location description latitude longitude status aiStatus isPublic forceApproved approvedByMDRRMO aiReview verification image images createdAt updatedAt"
+      )
+      .sort({ createdAt: -1 })
+      .limit(100)
+      .lean();
+
+    return res.json({ reports });
+  } catch (err) {
+    console.error("Get resident incident reports error:", err);
+    return res.status(500).json({ message: "Failed to load your incident reports." });
+  }
+};
+
 const updateVerification = async (req, res) => {
   try {
     const verificationStatus = String(
@@ -3219,6 +3246,7 @@ const exportIncidentPdf = async (req, res) => {
 
 module.exports = {
   getIncidents,
+  getMyIncidentReports,
   getIncidentHistory,
   registerIncident,
   updateStatus,
