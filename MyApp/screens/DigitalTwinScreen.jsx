@@ -1,5 +1,6 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
+  Alert,
   View,
   Text,
   ActivityIndicator,
@@ -10,12 +11,14 @@ import {
 } from "react-native";
 import { WebView } from "react-native-webview";
 import { Ionicons } from "@expo/vector-icons";
+import NetInfo from "@react-native-community/netinfo";
 
 const DIGITAL_TWIN_URL = "https://sagipbayan.com/digital-twin-mobile";
 const VIRTUAL_TWIN_URL = "https://sagipbayan.com/flood-virtual-twin-mobile";
 
 export default function DigitalTwinScreen({ navigation, route }) {
   const webViewRef = useRef(null);
+  const offlineAlertShownRef = useRef(false);
   const isVirtualTwin = route?.name === "VirtualTwin";
   const simulationUrl = isVirtualTwin ? VIRTUAL_TWIN_URL : DIGITAL_TWIN_URL;
   const featureName = isVirtualTwin ? "Virtual Twin" : "Digital Twin";
@@ -23,6 +26,54 @@ export default function DigitalTwinScreen({ navigation, route }) {
   const [loading, setLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [controlsVisible, setControlsVisible] = useState(true);
+
+  const goHome = () => {
+    navigation?.navigate?.("Map", { module: undefined });
+  };
+
+  const showOfflineMessage = () => {
+    if (offlineAlertShownRef.current) return;
+    offlineAlertShownRef.current = true;
+    setLoading(false);
+
+    Alert.alert(
+      "No internet connection",
+      "No internet connection.",
+      [
+        {
+          text: "OK",
+          onPress: goHome,
+        },
+      ],
+      { cancelable: false }
+    );
+  };
+
+  const handleConnectionState = (state) => {
+    const isOffline =
+      state?.isConnected === false || state?.isInternetReachable === false;
+
+    if (isOffline) showOfflineMessage();
+  };
+
+  useEffect(() => {
+    let mounted = true;
+
+    NetInfo.fetch()
+      .then((state) => {
+        if (mounted) handleConnectionState(state);
+      })
+      .catch((err) => console.log("Twin connectivity check failed:", err?.message));
+
+    const unsubscribe = NetInfo.addEventListener((state) => {
+      if (mounted) handleConnectionState(state);
+    });
+
+    return () => {
+      mounted = false;
+      unsubscribe?.();
+    };
+  }, []);
 
   const goBack = () => {
     if (navigation?.canGoBack?.()) {
@@ -34,9 +85,25 @@ export default function DigitalTwinScreen({ navigation, route }) {
   };
 
   const reloadSimulation = () => {
-    setHasError(false);
-    setLoading(true);
-    webViewRef.current?.reload();
+    NetInfo.fetch()
+      .then((state) => {
+        const isOffline =
+          state?.isConnected === false || state?.isInternetReachable === false;
+        if (isOffline) {
+          showOfflineMessage();
+          return;
+        }
+
+        offlineAlertShownRef.current = false;
+        setHasError(false);
+        setLoading(true);
+        webViewRef.current?.reload();
+      })
+      .catch(() => {
+        setHasError(false);
+        setLoading(true);
+        webViewRef.current?.reload();
+      });
   };
 
   const toggleControls = () => {
@@ -136,8 +203,21 @@ export default function DigitalTwinScreen({ navigation, route }) {
           }}
           onError={(event) => {
             console.log("WebView error:", event.nativeEvent);
-            setHasError(true);
-            setLoading(false);
+            NetInfo.fetch()
+              .then((state) => {
+                const isOffline =
+                  state?.isConnected === false || state?.isInternetReachable === false;
+                if (isOffline) {
+                  showOfflineMessage();
+                } else {
+                  setHasError(true);
+                  setLoading(false);
+                }
+              })
+              .catch(() => {
+                setHasError(true);
+                setLoading(false);
+              });
           }}
           onHttpError={(event) => {
             console.log("WebView HTTP error:", event.nativeEvent);

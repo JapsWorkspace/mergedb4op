@@ -406,6 +406,24 @@ function buildFullAddress({ district, barangay, street }) {
   return [street, barangay, district, "Jaen, Nueva Ecija"].filter(Boolean).join(", ");
 }
 
+const BARANGAY_DISTRICT_MAP = {
+  "District 1": ["Bagong Sikat", "Balbalino", "Banganan", "Langla", "Mabini", "Maligaya", "Santo Tomas South"],
+  "District 2": ["Imbunia", "Lambakin", "Marawa", "Naglabrahan", "San Josef", "San Roque", "Santo Tomas North"],
+  "District 3": ["Don Mariano Marcos", "Hilera", "Pinanggaan", "San Andres", "San Nicolas", "Ulanin-Pitak"],
+  "District 4": ["Calabasa", "Kasanglayan", "Pamacpacan", "Putlod", "Sapang"],
+};
+
+function getDistrictForBarangay(barangay) {
+  const target = sanitizeText(barangay, 80).toLowerCase();
+  if (!target) return "";
+
+  return (
+    Object.entries(BARANGAY_DISTRICT_MAP).find(([, barangays]) =>
+      barangays.some((item) => item.toLowerCase() === target)
+    )?.[0] || ""
+  );
+}
+
 function buildGuidelineNotification(guideline) {
   const title = sanitizeText(guideline?.title, 120) || "Untitled guideline";
   const dedupeKey = `guideline:${guideline._id}:published`;
@@ -825,9 +843,10 @@ const registerUser = async (req, res) => {
     const cleanPhone = sanitizePhone(phone);
     const cleanBarangay = sanitizeText(barangay, 80);
     const cleanStreet = sanitizeText(street || streetAddress, 160);
+    const cleanDistrict = getDistrictForBarangay(cleanBarangay);
     const cleanAddress =
       buildFullAddress({
-        district: "",
+        district: cleanDistrict,
         barangay: cleanBarangay,
         street: cleanStreet,
       }) || sanitizeText(address, 220);
@@ -887,6 +906,7 @@ const registerUser = async (req, res) => {
       email: cleanEmail,
       phone: cleanPhone,
       phoneNumber: cleanPhone,
+      district: cleanDistrict,
       barangay: cleanBarangay,
       street: cleanStreet,
       streetAddress: cleanStreet,

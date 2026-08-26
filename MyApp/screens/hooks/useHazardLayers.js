@@ -66,6 +66,7 @@ function renderPolygons(geojson, style) {
         strokeColor={style.strokeColor}
         fillColor={style.fillColor}
         strokeWidth={style.strokeWidth}
+        tappable={false}
       />
     ));
   });

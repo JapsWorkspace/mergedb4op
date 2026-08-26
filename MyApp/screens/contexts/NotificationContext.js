@@ -91,6 +91,18 @@ const MESSAGE_META = {
     sourceLabel: "Incident Alert",
     official: true,
   },
+  donation_received: {
+    title: "Donation received",
+    icon: "checkmark-circle-outline",
+    sourceLabel: "MDRRMO",
+    official: true,
+  },
+  donation_not_received: {
+    title: "Donation not received",
+    icon: "close-circle-outline",
+    sourceLabel: "MDRRMO",
+    official: true,
+  },
   guideline: {
     title: "New guideline posted by MDRRMO",
     icon: "megaphone-outline",
@@ -512,6 +524,18 @@ export function NotificationProvider({ children }) {
   useEffect(() => {
     refreshNotifications();
   }, [refreshNotifications]);
+
+  useEffect(() => {
+    if (!user?._id) return undefined;
+
+    const refreshTimer = setInterval(() => {
+      if (AppState.currentState === "active") {
+        refreshNotifications();
+      }
+    }, 5000);
+
+    return () => clearInterval(refreshTimer);
+  }, [refreshNotifications, user?._id]);
 
   useEffect(() => {
     if (!user?._id || registeredPushUserRef.current === String(user._id)) return;

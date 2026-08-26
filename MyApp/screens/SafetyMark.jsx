@@ -974,7 +974,7 @@ export default function SafetyMark() {
 
   const fetchDebugMarkers = useCallback(async () => {
     try {
-      const res = await getSafetyDebugLocations();
+      const res = await getSafetyDebugLocations(user?._id);
       const rawMarkers = getDebugMarkerPayload(res?.data);
       const nextMarkers = dedupeMarkersByUserId(
         rawMarkers
@@ -1343,8 +1343,13 @@ export default function SafetyMark() {
       .filter(Boolean);
 
     if (safetyDebugMode) {
+      const allowedDebugUserIds = new Set([
+        String(user?._id || ""),
+        ...allPeople.map((member) => String(member?.id || "")),
+      ].filter(Boolean));
       const serverMarkers = dedupeMarkersByUserId(
         debugMarkers
+          .filter((marker) => allowedDebugUserIds.has(String(marker?.id || marker?.userId || "")))
           .map((marker) => ({
             ...(isCurrentUserMarker(marker, user?._id)
               ? applySafetyStatusToMarker(marker, localSafetyStatus)

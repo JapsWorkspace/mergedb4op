@@ -174,6 +174,18 @@ export default function AppLayout({
               return true;
             }
 
+            if (isSafetyMarkNotification(item)) {
+              setNotificationsOpen(false);
+              navigation.navigate("AppShell", {
+                screen: "SafetyMark",
+                params: {
+                  focusUserId: item?.actorUserId || null,
+                  notificationId: item?.id || null,
+                },
+              });
+              return true;
+            }
+
             if (!isJoinRequestNotification(item)) return false;
 
             setNotificationsOpen(false);
@@ -555,6 +567,11 @@ function isAnnouncementNotification(item) {
   const type = String(item?.type || "").toLowerCase();
   return ["announcement", "mdrrmo_announcement", "drrmo_announcement"].includes(type) &&
     Boolean(item?.announcementId);
+}
+
+function isSafetyMarkNotification(item) {
+  const type = String(item?.type || "").toLowerCase();
+  return ["safety_safe", "safety_not_safe"].includes(type);
 }
 
 function formatNotificationTime(date) {

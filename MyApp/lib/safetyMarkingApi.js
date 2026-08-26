@@ -4,8 +4,10 @@ export function saveSafetyDebugLocation(payload) {
   return api.post("/api/safety-marking/debug-location", payload);
 }
 
-export function getSafetyDebugLocations() {
-  return api.get("/api/safety-marking/debug-locations");
+export function getSafetyDebugLocations(userId) {
+  return api.get("/api/safety-marking/debug-locations", {
+    params: userId ? { userId } : undefined,
+  });
 }
 
 export function updateSafetyDebugStatus(userId, safetyStatus) {

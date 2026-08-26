@@ -16,6 +16,16 @@ const JAEN_DEBUG_POINTS = [
   { latitude: 15.4092, longitude: 120.8918 },
 ];
 
+const JAEN_DEBUG_BOUNDS = {
+  north: 15.42,
+  south: 15.28,
+  east: 121.05,
+  west: 120.85,
+};
+
+const DEBUG_BOUNDARY_MARGIN = 0.0015;
+const DEBUG_LOCATION_ATTEMPTS = 96;
+
 function hashString(value) {
   return String(value || "debug-user").split("").reduce((hash, char) => {
     const nextHash = (hash << 5) - hash + char.charCodeAt(0);
@@ -25,6 +35,10 @@ function hashString(value) {
 
 function roundCoordinate(value) {
   return Number(value.toFixed(6));
+}
+
+function hashToUnitInterval(value) {
+  return (hashString(value) >>> 0) / 4294967295;
 }
 
 function pointInRing(latitude, longitude, ring) {
@@ -72,21 +86,35 @@ function isInsideJaenBoundary(latitude, longitude) {
 }
 
 export function generateSeededJaenDebugLocation(userId) {
-  const seed = Math.abs(hashString(userId));
-  const point = JAEN_DEBUG_POINTS[seed % JAEN_DEBUG_POINTS.length] || JAEN_DEBUG_POINTS[0];
-  const offsetSeed = Math.abs(hashString(`${userId}:offset`));
-  const latOffset = (((offsetSeed % 7) - 3) * 0.00012);
-  const lngOffset = ((((Math.floor(offsetSeed / 7) % 7) - 3)) * 0.00012);
-  const candidate = {
-    latitude: roundCoordinate(point.latitude + latOffset),
-    longitude: roundCoordinate(point.longitude + lngOffset),
-  };
+  const normalizedUserId = String(userId || "debug-user");
+  const latitudeSpan =
+    JAEN_DEBUG_BOUNDS.north - JAEN_DEBUG_BOUNDS.south - DEBUG_BOUNDARY_MARGIN * 2;
+  const longitudeSpan =
+    JAEN_DEBUG_BOUNDS.east - JAEN_DEBUG_BOUNDS.west - DEBUG_BOUNDARY_MARGIN * 2;
 
-  if (isInsideJaenBoundary(candidate.latitude, candidate.longitude)) {
-    return candidate;
+  // Rejection sampling distributes stable per-user locations throughout the
+  // actual Jaen polygon instead of repeatedly choosing from a few fixed spots.
+  for (let attempt = 0; attempt < DEBUG_LOCATION_ATTEMPTS; attempt += 1) {
+    const latitude =
+      JAEN_DEBUG_BOUNDS.south +
+      DEBUG_BOUNDARY_MARGIN +
+      hashToUnitInterval(`${normalizedUserId}:latitude:${attempt}`) * latitudeSpan;
+    const longitude =
+      JAEN_DEBUG_BOUNDS.west +
+      DEBUG_BOUNDARY_MARGIN +
+      hashToUnitInterval(`${normalizedUserId}:longitude:${attempt}`) * longitudeSpan;
+    const candidate = {
+      latitude: roundCoordinate(latitude),
+      longitude: roundCoordinate(longitude),
+    };
+
+    if (isInsideJaenBoundary(candidate.latitude, candidate.longitude)) {
+      return candidate;
+    }
   }
 
-  const fallback = JAEN_DEBUG_POINTS.find((item) =>
+  const fallbackStart = (hashString(normalizedUserId) >>> 0) % JAEN_DEBUG_POINTS.length;
+  const fallback = [...JAEN_DEBUG_POINTS.slice(fallbackStart), ...JAEN_DEBUG_POINTS.slice(0, fallbackStart)].find((item) =>
     isInsideJaenBoundary(item.latitude, item.longitude)
   );
 

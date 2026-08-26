@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 
 const UserModel = require("../models/User");
 const ConnectionModel = require("../models/Connection");
+const SafetyDebugLocation = require("../models/SafetyDebugLocation");
 const { sendExpoPushNotifications } = require("../utils/sendExpoPushNotifications");
 
 function normalizeConnectionCode(code) {
@@ -18,6 +19,53 @@ function idsMatch(a, b) {
 
 function hasMember(list, userId) {
   return Array.isArray(list) && list.some((id) => idsMatch(id, userId));
+}
+
+function toFiniteCoordinate(value) {
+  const coordinate = Number(value);
+  return Number.isFinite(coordinate) ? coordinate : null;
+}
+
+function buildSafetyLocationLabel(user) {
+  const parts = [user?.street || user?.streetAddress, user?.barangay, user?.address]
+    .map((value) => String(value || "").trim())
+    .filter(Boolean);
+  return [...new Set(parts)].join(", ");
+}
+
+async function resolveSafetyAlertLocation(user) {
+  if (!user?._id) return null;
+
+  const debugMarker = await SafetyDebugLocation.findOne({
+    userId: String(user._id),
+    debugMode: true,
+  })
+    .sort({ updatedAt: -1 })
+    .lean();
+  const debugLatitude = toFiniteCoordinate(debugMarker?.latitude);
+  const debugLongitude = toFiniteCoordinate(debugMarker?.longitude);
+  const liveLatitude = toFiniteCoordinate(user?.location?.lat);
+  const liveLongitude = toFiniteCoordinate(user?.location?.lng);
+  const usingDebugLocation = debugLatitude !== null && debugLongitude !== null;
+  const latitude = usingDebugLocation ? debugLatitude : liveLatitude;
+  const longitude = usingDebugLocation ? debugLongitude : liveLongitude;
+
+  if (latitude === null || longitude === null) return null;
+
+  return {
+    latitude,
+    longitude,
+    locationLabel: buildSafetyLocationLabel(user),
+    source: usingDebugLocation ? "debug" : "live",
+  };
+}
+
+function formatSafetyAlertLocation(location) {
+  if (!location) return "Location is not available yet.";
+  const coordinates = `${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}`;
+  return location.locationLabel
+    ? `Location: ${location.locationLabel} (${coordinates}).`
+    : `Location: ${coordinates}.`;
 }
 
 async function addNotification(userId, notification) {
@@ -67,7 +115,7 @@ async function notifyConnectionMembersSafetyUpdate(user, status, message = "") {
   if (!user?._id) return;
 
   const connections = await ConnectionModel.find({
-    members: user._id,
+    $or: [{ members: user._id }, { creator: user._id }],
   }).select("_id code creator members");
 
   if (!connections.length) return;
@@ -86,15 +134,18 @@ async function notifyConnectionMembersSafetyUpdate(user, status, message = "") {
 
   const cleanMessage = String(message || "").trim();
 
+  const safetyLocation = isSafe ? null : await resolveSafetyAlertLocation(user);
+  const locationMessage = isSafe ? "" : formatSafetyAlertLocation(safetyLocation);
+
   const notificationMessage = cleanMessage
-    ? `${baseMessage} Message: ${cleanMessage}`
-    : baseMessage;
+    ? `${baseMessage} Message: ${cleanMessage}${locationMessage ? ` ${locationMessage}` : ""}`
+    : `${baseMessage}${locationMessage ? ` ${locationMessage}` : ""}`;
 
   const jobs = [];
   const recipientIds = new Set();
 
   connections.forEach((connection) => {
-    const members = Array.isArray(connection.members) ? connection.members : [];
+    const members = [connection.creator, ...(Array.isArray(connection.members) ? connection.members : [])];
 
     members.forEach((memberId) => {
       if (!memberId) return;
@@ -102,11 +153,15 @@ async function notifyConnectionMembersSafetyUpdate(user, status, message = "") {
       // Do not notify the same user who marked their own status.
       if (idsMatch(memberId, user._id)) return;
 
-      recipientIds.add(String(memberId));
+      const recipientId = String(memberId);
+      if (recipientIds.has(recipientId)) return;
+      recipientIds.add(recipientId);
       jobs.push(
         addNotification(memberId, {
           type: notificationType,
           message: notificationMessage,
+          notificationType: isSafe ? "normal" : "danger",
+          soundType: isSafe ? "notification" : "danger",
           connectionId: connection._id,
           actorUserId: user._id,
           actorName,
@@ -137,6 +192,11 @@ async function notifyConnectionMembersSafetyUpdate(user, status, message = "") {
       type: notificationType,
       soundType: isSafe ? "notification" : "danger",
       actorUserId: String(user._id),
+      latitude: safetyLocation?.latitude ?? null,
+      longitude: safetyLocation?.longitude ?? null,
+      locationLabel: safetyLocation?.locationLabel || "",
+      locationSource: safetyLocation?.source || "",
+      screen: "SafetyMark",
     },
   });
 }

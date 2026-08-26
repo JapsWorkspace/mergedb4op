@@ -125,24 +125,26 @@ export default function DonationScreen({ navigation }) {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
-  const fetchHistory = useCallback(async () => {
+  const fetchHistory = useCallback(async ({ silent = false } = {}) => {
     if (!user?._id) {
       setHistory([]);
       return;
     }
 
-    setHistoryLoading(true);
+    if (!silent) setHistoryLoading(true);
     setHistoryError("");
 
     try {
-      const donations = await getMyDonations(user._id);
+      const donations = await getMyDonations(user._id, { type: "monetary" });
       setHistory(Array.isArray(donations) ? donations : []);
     } catch (err) {
       console.log("[donations] history failed:", err?.message);
-      setHistoryError("Unable to load donation history.");
-      setHistory([]);
+      if (!silent) {
+        setHistoryError("Unable to load donation history.");
+        setHistory([]);
+      }
     } finally {
-      setHistoryLoading(false);
+      if (!silent) setHistoryLoading(false);
     }
   }, [user?._id]);
 
@@ -190,6 +192,16 @@ export default function DonationScreen({ navigation }) {
     fetchHistory();
     syncQueuedDonations();
   }, [fetchHistory, syncQueuedDonations]);
+
+  useEffect(() => {
+    if (activeTab !== "history") return undefined;
+
+    const refreshTimer = setInterval(
+      () => fetchHistory({ silent: true }),
+      8000
+    );
+    return () => clearInterval(refreshTimer);
+  }, [activeTab, fetchHistory]);
 
   const resetMonetaryInputs = () => {
     setForm((prev) => ({
@@ -784,6 +796,18 @@ function DonationHistoryCard({ item, styles }) {
 
       {item.adminNotes ? (
         <Text style={styles.assignmentText}>Note: {item.adminNotes}</Text>
+      ) : null}
+
+      {normalizedStatus === "received" && item.receivedAt ? (
+        <Text style={styles.assignmentText}>
+          Received on: {new Date(item.receivedAt).toLocaleString("en-PH")}
+        </Text>
+      ) : null}
+
+      {normalizedStatus === "not_received" && item.notReceivedAt ? (
+        <Text style={styles.assignmentText}>
+          Marked not received on: {new Date(item.notReceivedAt).toLocaleString("en-PH")}
+        </Text>
       ) : null}
 
       {item.assignment?.targetName ? (

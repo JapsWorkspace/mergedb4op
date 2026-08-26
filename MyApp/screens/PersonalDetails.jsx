@@ -92,6 +92,41 @@ function buildFullAddress({ district, barangay, street }) {
     .join(", ");
 }
 
+function getDistrictForBarangay(barangay) {
+  const target = String(barangay || "").trim().toLowerCase();
+  if (!target) return "";
+
+  return (
+    Object.entries(BARANGAY_BY_DISTRICT).find(([, barangays]) =>
+      barangays.some((item) => item.toLowerCase() === target)
+    )?.[0] || ""
+  );
+}
+
+function getStreetFromUser(user) {
+  const directStreet =
+    user?.street || user?.streetAddress || user?.addressLine || user?.houseAddress;
+  if (String(directStreet || "").trim()) return String(directStreet).trim();
+
+  const fullAddress = String(user?.address || "").trim();
+  if (!fullAddress) return "";
+
+  const suffixes = [
+    user?.barangay,
+    user?.district,
+    "Jaen",
+    "Nueva Ecija",
+  ]
+    .map((value) => String(value || "").trim().toLowerCase())
+    .filter(Boolean);
+
+  return fullAddress
+    .split(",")
+    .map((part) => part.trim())
+    .filter((part) => part && !suffixes.includes(part.toLowerCase()))
+    .join(", ");
+}
+
 function getUserId(user) {
   return user?._id || user?.id || user?.userId || "";
 }
@@ -106,15 +141,11 @@ export default function PersonalDetails({ navigation }) {
     String(user?.phone || user?.phoneNumber || "").replace(/^0+/, "")
   );
 
-  const [district, setDistrict] = useState(user?.district || "");
-  const [barangay, setBarangay] = useState(user?.barangay || "");
-  const [street, setStreet] = useState(
-    user?.street ||
-      user?.streetAddress ||
-      user?.addressLine ||
-      user?.houseAddress ||
-      ""
+  const [district, setDistrict] = useState(
+    user?.district || getDistrictForBarangay(user?.barangay)
   );
+  const [barangay, setBarangay] = useState(user?.barangay || "");
+  const [street, setStreet] = useState(getStreetFromUser(user));
 
   const [error, setError] = useState("");
   const [isSaving, setIsSaving] = useState(false);

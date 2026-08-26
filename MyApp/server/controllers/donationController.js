@@ -527,8 +527,6 @@ async function notifyDonationSubmitted(donation, req, isResubmission = false) {
 
 async function notifyDonationReceiptDecision(donation, req, status) {
   try {
-    const donorLabel = sanitizeText(donation?.donorName, 120) || "Donation";
-    const decision = status === "received" ? "received" : "marked as not received";
     const donorUserId = toObjectIdOrNull(donation?.donorUserId);
 
     if (!donorUserId) {
@@ -536,7 +534,10 @@ async function notifyDonationReceiptDecision(donation, req, status) {
     }
 
     const title = status === "received" ? "Donation received" : "Donation not received";
-    const message = `${donorLabel} donation was ${decision}.`;
+    const message =
+      status === "received"
+        ? `Your ${donation?.inventoryType === "monetary" ? "monetary " : ""}donation was received and confirmed by MDRRMO.`
+        : `Your ${donation?.inventoryType === "monetary" ? "monetary " : ""}donation was marked as not received by MDRRMO.`;
 
     await createNotification({
       recipientRole: "all",
@@ -686,7 +687,38 @@ async function getMyDonations(req, res) {
       return res.status(400).json({ message: "Valid userId is required." });
     }
 
-    const donations = await Donation.find({ donorUserId: userId })
+    const user = await User.findById(userId)
+      .select("email phone contactNumber mobileNumber")
+      .lean();
+    const identityFilters = [{ donorUserId: userId }];
+    const email = normalizeLower(user?.email, 180);
+    const phoneCandidates = [
+      user?.phone,
+      user?.contactNumber,
+      user?.mobileNumber,
+    ]
+      .map((value) => String(value || "").replace(/\D/g, ""))
+      .filter(Boolean)
+      .flatMap((value) => [value, value.replace(/^0/, "")]);
+
+    if (email) identityFilters.push({ donorEmail: email });
+    if (phoneCandidates.length) {
+      identityFilters.push({
+        donorPhone: { $in: [...new Set(phoneCandidates)] },
+      });
+    }
+
+    const filters = [{ $or: identityFilters }];
+    const requestedType = normalizeLower(req.query.type, 40);
+    if (requestedType === "monetary") {
+      filters.push(buildMonetaryDonationFilter());
+    }
+    const requestedStatus = normalizeDonationStatus(req.query.status);
+    if (requestedStatus && VALID_STATUSES.includes(requestedStatus)) {
+      filters.push({ status: requestedStatus });
+    }
+
+    const donations = await Donation.find({ $and: filters })
       .populate("matchedNeedIds")
       .sort({ createdAt: -1 })
       .limit(Math.min(300, toNumber(req.query.limit, 100)));

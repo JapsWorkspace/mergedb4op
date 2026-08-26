@@ -134,7 +134,8 @@ const INCIDENT_IMAGE_MAX_BYTES = 15 * 1024 * 1024;
 const SIMILAR_INCIDENT_TITLE = "Similar Incident Already Reported";
 const SIMILAR_INCIDENT_MESSAGE =
   "A similar incident has already been reported in this area. Please check the existing report instead.";
-const ROUTE_HAZARD_ROUTE_RADIUS_METERS = 100;
+const ROUTE_HAZARD_ROUTE_RADIUS_METERS = 150;
+const ROUTE_HAZARD_CURRENT_POSITION_TOLERANCE_METERS = 35;
 const ROUTE_HAZARD_THRESHOLDS_METERS = [300, 100];
 const ROUTE_HAZARD_CHECK_INTERVAL_MS = 2500;
 const INCIDENT_CLUSTER_MIN_REPORTS = 5;
@@ -1285,18 +1286,6 @@ function formatDistanceMeters(meters) {
   return `${Math.max(10, Math.round(value / 10) * 10)} m`;
 }
 
-function getRouteDistanceToIndex(routeCoords, startIndex, endIndex) {
-  let meters = 0;
-  const start = Math.max(0, startIndex);
-  const end = Math.min(routeCoords.length - 1, endIndex);
-
-  for (let index = start; index < end; index += 1) {
-    meters += distanceMetersBetween(routeCoords[index], routeCoords[index + 1]) || 0;
-  }
-
-  return meters;
-}
-
 function findIncidentAheadOnRoute({ routeCoords, currentLocation, incidents }) {
   const coords = safeArray(routeCoords).filter((coord) =>
     isValidCoordinate(coord?.latitude, coord?.longitude)
@@ -1306,8 +1295,24 @@ function findIncidentAheadOnRoute({ routeCoords, currentLocation, incidents }) {
     return null;
   }
 
-  const progress = getNearestRouteProgress(coords, currentLocation);
-  const currentIndex = progress.index;
+  let routeLine;
+  let currentProgressMeters;
+
+  try {
+    routeLine = turf.lineString(
+      coords.map((coord) => [Number(coord.longitude), Number(coord.latitude)])
+    );
+    const currentProjection = turf.nearestPointOnLine(
+      routeLine,
+      turf.point([Number(currentLocation.longitude), Number(currentLocation.latitude)]),
+      { units: "kilometers" }
+    );
+    currentProgressMeters = Number(currentProjection?.properties?.location) * 1000;
+  } catch (_) {
+    return null;
+  }
+
+  if (!Number.isFinite(currentProgressMeters)) return null;
 
   return safeArray(incidents)
     .map((incident) => {
@@ -1320,32 +1325,36 @@ function findIncidentAheadOnRoute({ routeCoords, currentLocation, incidents }) {
         return null;
       }
 
-      let nearestIndex = -1;
-      let nearestMeters = Infinity;
+      let incidentProjection;
+      try {
+        incidentProjection = turf.nearestPointOnLine(
+          routeLine,
+          turf.point([incidentPoint.longitude, incidentPoint.latitude]),
+          { units: "kilometers" }
+        );
+      } catch (_) {
+        return null;
+      }
 
-      coords.forEach((coord, index) => {
-        const meters = distanceMetersBetween(coord, incidentPoint);
-        if (meters != null && meters < nearestMeters) {
-          nearestMeters = meters;
-          nearestIndex = index;
-        }
-      });
+      const routeOffsetMeters = Number(incidentProjection?.properties?.dist) * 1000;
+      const incidentProgressMeters =
+        Number(incidentProjection?.properties?.location) * 1000;
+      const rawDistanceAheadMeters = incidentProgressMeters - currentProgressMeters;
 
       if (
-        nearestIndex <= currentIndex ||
-        nearestMeters > ROUTE_HAZARD_ROUTE_RADIUS_METERS
+        !Number.isFinite(routeOffsetMeters) ||
+        !Number.isFinite(incidentProgressMeters) ||
+        routeOffsetMeters > ROUTE_HAZARD_ROUTE_RADIUS_METERS ||
+        rawDistanceAheadMeters < -ROUTE_HAZARD_CURRENT_POSITION_TOLERANCE_METERS
       ) {
         return null;
       }
 
-      const distanceAheadMeters =
-        getRouteDistanceToIndex(coords, currentIndex, nearestIndex) +
-        (distanceMetersBetween(progress.snappedLocation, coords[currentIndex]) || 0);
+      const distanceAheadMeters = Math.max(0, rawDistanceAheadMeters);
 
       return {
         incident,
-        nearestIndex,
-        routeOffsetMeters: nearestMeters,
+        routeOffsetMeters,
         distanceAheadMeters,
       };
     })
@@ -1777,65 +1786,6 @@ function IncidentListItem({ incident, onPress, themedOverlay }) {
   );
 }
 
-function getResidentIncidentStatus(incident) {
-  const status = normalizeIncidentStatus(incident?.status);
-
-  if (status === "approved" || incident?.approvedByMDRRMO === true) {
-    return { label: "Approved", color: "#16A34A", icon: "checkmark-circle" };
-  }
-  if (["resolved", "closed"].includes(status)) {
-    return { label: "Resolved", color: "#0F766E", icon: "shield-checkmark" };
-  }
-  if (["rejected", "dismissed", "invalid"].includes(status)) {
-    return { label: "Rejected", color: "#DC2626", icon: "close-circle" };
-  }
-
-  return { label: "On Process", color: "#D97706", icon: "time" };
-}
-
-function MyIncidentReportItem({ incident, themedOverlay }) {
-  const status = getResidentIncidentStatus(incident);
-  const submittedAt = incident?.createdAt
-    ? new Date(incident.createdAt).toLocaleString()
-    : "Recently submitted";
-
-  return (
-    <View style={[styles.incidentListItem, themedOverlay?.card]}>
-      <View
-        style={[
-          styles.incidentListIcon,
-          { borderColor: status.color, backgroundColor: `${status.color}18` },
-        ]}
-      >
-        <Ionicons name={getIncidentCategoryIcon(incident?.type)} size={19} color={status.color} />
-      </View>
-      <View style={styles.incidentListCopy}>
-        <View style={styles.incidentListTitleRow}>
-          <Text style={[styles.incidentListTitle, themedOverlay?.text]} numberOfLines={1}>
-            {formatIncidentType(incident?.type)}
-          </Text>
-          <View
-            style={[
-              styles.incidentStatusChip,
-              { borderColor: status.color, backgroundColor: `${status.color}14` },
-            ]}
-          >
-            <Ionicons name={status.icon} size={12} color={status.color} />
-            <Text style={[styles.incidentStatusText, { color: status.color }]}>
-              {status.label}
-            </Text>
-          </View>
-        </View>
-        <Text style={[styles.incidentListMeta, themedOverlay?.subtext]} numberOfLines={2}>
-          {safeDisplayText(incident?.location, "Location not provided")}
-        </Text>
-        <Text style={[styles.incidentListSubMeta, themedOverlay?.subtext]} numberOfLines={1}>
-          Submitted {submittedAt}
-        </Text>
-      </View>
-    </View>
-  );
-}
 function renderBoundary(data, stylePrefix, strokeColor, strokeWidth, fillColor) {
   return safeFeatures(data).flatMap((feature, idx) => {
     const geom = feature?.geometry;
@@ -2017,8 +1967,6 @@ export default function Map() {
   const [incidentImageError, setIncidentImageError] = useState("");
   const [incidentErrors, setIncidentErrors] = useState({});
   const [incidentBusy, setIncidentBusy] = useState(false);
-  const [myReportsRefreshKey, setMyReportsRefreshKey] = useState(0);
-  const [recentSubmittedIncident, setRecentSubmittedIncident] = useState(null);
   const [incidentLocating, setIncidentLocating] = useState(false);
   const [quickReportVisible, setQuickReportVisible] = useState(false);
 const [mapWeather, setMapWeather] = useState(null);
@@ -2710,7 +2658,10 @@ const {
         (item) => hazard.distanceAheadMeters <= item
       );
 
-      if (!threshold) return;
+      if (!threshold) {
+        setRouteHazardBanner(null);
+        return;
+      }
 
       const incidentId =
         hazard.incident?._id ||
@@ -4018,13 +3969,7 @@ if (!incidentDebugMode && !currentLocationFeature) {
     const imagesToUpload = getIncidentImageItems(incidentImage);
     const formData = buildIncidentFormData(uploadParameters, imagesToUpload);
 
-    const submitResponse = await postMultipart("/incident/register", formData);
-    const submittedIncident = submitResponse?.data?.incident;
-    if (submittedIncident?._id) {
-      setRecentSubmittedIncident(submittedIncident);
-    }
-    setMyReportsRefreshKey((value) => value + 1);
-
+    await postMultipart("/incident/register", formData);
     if (typeof refreshIncidents === "function") {
       await refreshIncidents();
     } else {
@@ -4251,6 +4196,21 @@ if (!incidentDebugMode && !currentLocationFeature) {
         {isFlood && floodLayers}
         {isEarthquake && earthquakeLayer}
         {hazardBarangayOutlines}
+        {isHazard &&
+          homepageBarangays.map((barangay) => (
+            <Polygon
+              key={`hazard-brgy-touch-${barangay.id}`}
+              coordinates={barangay.mainRing}
+              strokeColor="rgba(0,0,0,0)"
+              strokeWidth={0}
+              // A nearly transparent fill creates a reliable native hit area
+              // on Android without changing the visible hazard colors.
+              fillColor="rgba(0,0,0,0.001)"
+              tappable
+              onPress={() => handleSelectHazardBarangay(barangay)}
+              zIndex={112}
+            />
+          ))}
         {isHazard && selectedHazardBarangay?.mainRing?.length > 2 && (
           <>
             <Polygon
@@ -4539,8 +4499,6 @@ if (!incidentDebugMode && !currentLocationFeature) {
               : ""
           }
           incidents={selectedBarangayIncidents}
-          myReportsRefreshKey={myReportsRefreshKey}
-          recentSubmittedIncident={recentSubmittedIncident}
           onIncidentPress={focusIncidentOnMap}
           selectedBarangay={selectedBarangay}
           onClearSelectedBarangay={clearSelectedBarangay}
@@ -4634,8 +4592,6 @@ function ModulePanel({
   incidentCount,
   incidentTopType,
   incidents,
-  myReportsRefreshKey,
-  recentSubmittedIncident,
   onIncidentPress,
   selectedBarangay,
   onClearSelectedBarangay,
@@ -4696,60 +4652,9 @@ function ModulePanel({
   const { setIsMapPanelOpen } = useContext(MapContext);
   const { user } = useContext(UserContext) || {};
   const [incidentPanelTab, setIncidentPanelTab] = useState("reports");
-  const [myIncidentReports, setMyIncidentReports] = useState([]);
-  const [myReportsLoading, setMyReportsLoading] = useState(false);
-  const [myReportsError, setMyReportsError] = useState("");
   const [evacFilter, setEvacFilter] = useState("nearest");
   const [barangayFilterOpen, setBarangayFilterOpen] = useState(false);
 
-  const loadMyIncidentReports = useCallback(async () => {
-    const userId = user?._id || user?.id;
-    if (!userId) {
-      setMyIncidentReports([]);
-      return;
-    }
-
-    setMyReportsLoading(true);
-    setMyReportsError("");
-    try {
-      const response = await api.get(`/incident/my-reports/${encodeURIComponent(userId)}`);
-      const fetchedReports = Array.isArray(response?.data?.reports)
-        ? response.data.reports
-        : [];
-      setMyIncidentReports(() => {
-        if (
-          recentSubmittedIncident?._id &&
-          !fetchedReports.some((item) => item?._id === recentSubmittedIncident._id)
-        ) {
-          return [recentSubmittedIncident, ...fetchedReports];
-        }
-        return fetchedReports;
-      });
-    } catch (err) {
-      console.log("[my incident reports] fetch failed:", err?.message || err);
-      setMyReportsError("Unable to load your report history.");
-    } finally {
-      setMyReportsLoading(false);
-    }
-  }, [recentSubmittedIncident, user?._id, user?.id]);
-
-  useEffect(() => {
-    if (activeModule === "incident") {
-      loadMyIncidentReports();
-      if (myReportsRefreshKey > 0) setIncidentPanelTab("history");
-    }
-  }, [activeModule, loadMyIncidentReports, myReportsRefreshKey]);
-
-  useEffect(() => {
-    if (!recentSubmittedIncident?._id) return;
-
-    setMyIncidentReports((current) => [
-      recentSubmittedIncident,
-      ...current.filter((item) => item?._id !== recentSubmittedIncident._id),
-    ]);
-    setMyReportsError("");
-    setIncidentPanelTab("history");
-  }, [recentSubmittedIncident]);
   const selectedBarangayIdSetForPanel = useMemo(
     () => new Set(selectedBarangayIds || []),
     [selectedBarangayIds]
@@ -5402,19 +5307,6 @@ function ModulePanel({
           style={[
             styles.incidentToggleBtn,
             themedOverlay.softCard,
-            incidentPanelTab === "history" && styles.incidentToggleBtnActive,
-          ]}
-          onPress={() => setIncidentPanelTab("history")}
-        >
-          <Ionicons name="time-outline" size={18} color={incidentPanelTab === "history" ? "#FFFFFF" : theme.primary} />
-          <Text style={[styles.incidentToggleText, themedOverlay.primaryText, incidentPanelTab === "history" && styles.incidentToggleTextActive]}>History</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          activeOpacity={0.88}
-          style={[
-            styles.incidentToggleBtn,
-            themedOverlay.softCard,
             incidentPanelTab === "map" && styles.incidentToggleBtnActive,
           ]}
           onPress={() => setIncidentPanelTab("map")}
@@ -5715,52 +5607,6 @@ function ModulePanel({
               key={incident?._id || `${incident.latitude}-${incident.longitude}`}
               incident={incident}
               onPress={() => onIncidentPress?.(incident)}
-              themedOverlay={themedOverlay}
-            />
-          ))
-        )}
-      </View>
-    )}
-
-    {incidentPanelTab === "history" && (
-      <View style={[styles.panelSection, themedOverlay.section]}>
-        <View style={styles.incidentBarangayHeader}>
-          <View style={styles.incidentBarangayIcon}>
-            <Ionicons name="time-outline" size={17} color="#14532D" />
-          </View>
-          <View style={styles.incidentBarangayCopy}>
-            <Text style={[styles.sectionLabel, themedOverlay.text]}>My report history</Text>
-            <Text style={[styles.panelNote, themedOverlay.subtext]}>
-              New reports appear here immediately as On Process while MDRRMO reviews them.
-            </Text>
-          </View>
-        </View>
-
-        {myReportsLoading ? (
-          <View style={[styles.emptyIncidentState, themedOverlay.card]}>
-            <Ionicons name="sync-outline" size={24} color="#14532D" />
-            <Text style={[styles.emptyIncidentTitle, themedOverlay.text]}>Loading your reports...</Text>
-          </View>
-        ) : myReportsError ? (
-          <TouchableOpacity
-            style={[styles.emptyIncidentState, themedOverlay.card]}
-            onPress={loadMyIncidentReports}
-          >
-            <Ionicons name="refresh-outline" size={24} color="#DC2626" />
-            <Text style={[styles.emptyIncidentTitle, themedOverlay.text]}>{myReportsError}</Text>
-            <Text style={[styles.emptyIncidentText, themedOverlay.subtext]}>Tap to try again.</Text>
-          </TouchableOpacity>
-        ) : myIncidentReports.length === 0 ? (
-          <View style={[styles.emptyIncidentState, themedOverlay.card]}>
-            <Ionicons name="document-text-outline" size={24} color="#14532D" />
-            <Text style={[styles.emptyIncidentTitle, themedOverlay.text]}>No submitted reports yet</Text>
-            <Text style={[styles.emptyIncidentText, themedOverlay.subtext]}>Your submitted incidents will be tracked here.</Text>
-          </View>
-        ) : (
-          myIncidentReports.map((incident) => (
-            <MyIncidentReportItem
-              key={incident?._id}
-              incident={incident}
               themedOverlay={themedOverlay}
             />
           ))
