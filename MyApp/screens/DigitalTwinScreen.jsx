@@ -203,17 +203,19 @@ export default function DigitalTwinScreen({ navigation, route }) {
           mixedContentMode="always"
           startInLoadingState={false}
           scalesPageToFit={false}
-          scrollEnabled={false}
-          bounces={false}
+          scrollEnabled={isVirtualTwin}
+          bounces={isVirtualTwin}
           overScrollMode="never"
-          injectedJavaScript={injectedUnityOnlyView}
+          injectedJavaScript={isVirtualTwin ? undefined : injectedUnityOnlyView}
           onLoadStart={() => {
             setLoading(true);
             setHasError(false);
           }}
           onLoadEnd={() => {
             setLoading(false);
-            webViewRef.current?.injectJavaScript(injectedUnityOnlyView);
+            if (!isVirtualTwin) {
+              webViewRef.current?.injectJavaScript(injectedUnityOnlyView);
+            }
           }}
           onError={(event) => {
             console.log("WebView error:", event.nativeEvent);
@@ -247,7 +249,7 @@ export default function DigitalTwinScreen({ navigation, route }) {
         />
       )}
 
-      {!hasError && controlsVisible && (
+      {!hasError && controlsVisible && !isVirtualTwin && (
         <>
           <View style={styles.topFade} />
           <View style={styles.bottomFade} />
@@ -301,13 +303,25 @@ export default function DigitalTwinScreen({ navigation, route }) {
         </>
       )}
 
-      {!hasError && !controlsVisible && (
+      {!hasError && !controlsVisible && !isVirtualTwin && (
         <TouchableOpacity
           style={styles.showControlsButton}
           onPress={toggleControls}
           activeOpacity={0.85}
         >
           <Text style={styles.showControlsText}>Show Controls</Text>
+        </TouchableOpacity>
+      )}
+
+      {!hasError && isVirtualTwin && (
+        <TouchableOpacity
+          style={styles.virtualBackButton}
+          onPress={goBack}
+          activeOpacity={0.85}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+        >
+          <Ionicons name="arrow-back" size={25} color="#ffffff" />
         </TouchableOpacity>
       )}
 
@@ -418,6 +432,21 @@ const styles = StyleSheet.create({
   },
 
   roundButton: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    backgroundColor: GLASS,
+    borderWidth: 1,
+    borderColor: GLASS_BORDER,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  virtualBackButton: {
+    position: "absolute",
+    top: Platform.OS === "android" ? 38 : 50,
+    left: 14,
+    zIndex: 20,
     width: 46,
     height: 46,
     borderRadius: 23,
