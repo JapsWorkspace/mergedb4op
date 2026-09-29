@@ -29,12 +29,18 @@ import jaenlogo from "../../assets/images/jaenlogo.png";
 import hero1 from "../../assets/images/hero1.jpg";
 import hero2 from "../../assets/images/hero2.jpg";
 import hero3 from "../../assets/images/hero3.jpg";
+import mobileHeroMockup from "../../assets/images/mobile-showcase/login-map-mockup.png";
+import mobileDownloadMockup from "../../assets/images/mobile-showcase/download-now-mockup.png";
+import mobileFeaturesMockup from "../../assets/images/mobile-showcase/awesome-features-mockup.png";
 import EvacMap from "../map/Map";
 import PublicDigitalTwinPanel from "./PublicDigitalTwinPanel";
 import FloodVirtualTwin from "./FloodVirtualTwin";
 import { API_BASE_URL } from "../../config/api";
 
 const BASE_URL = API_BASE_URL;
+const ANDROID_APK_URL =
+  "https://expo.dev/artifacts/eas/E5dS-gC_nFfQKsEHfW4DDwEX2oNb0UYnoExXtMnDETY.apk";
+const IOS_TESTFLIGHT_URL = "https://testflight.apple.com/join/jJTS4hpa";
 
 const JAEN_COORDS = {
   latitude: 15.3274,
@@ -592,6 +598,38 @@ export default function Dashboard() {
       setIsEditorOpen(false);
     }
   }, [canEdit, isEditorOpen]);
+
+  useEffect(() => {
+    const revealItems = Array.from(
+      document.querySelectorAll(".mobile-scroll-reveal")
+    );
+
+    if (!revealItems.length) return undefined;
+
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+
+    if (prefersReducedMotion || !("IntersectionObserver" in window)) {
+      revealItems.forEach((item) => item.classList.add("is-revealed"));
+      return undefined;
+    }
+
+    const revealObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          entry.target.classList.toggle("is-revealed", entry.isIntersecting);
+        });
+      },
+      {
+        rootMargin: "0px 0px -10% 0px",
+        threshold: 0.14,
+      }
+    );
+
+    revealItems.forEach((item) => revealObserver.observe(item));
+    return () => revealObserver.disconnect();
+  }, []);
 
   useEffect(() => {
     if (!activeHeroImages.length) {
@@ -2469,6 +2507,155 @@ export default function Dashboard() {
               </section>
             </section>
           </div>
+
+          <section className="mobile-showcase" aria-labelledby="mobile-showcase-title">
+            <div className="mobile-showcase-hero">
+              <div className="landing-wide-shell mobile-showcase-hero-grid">
+                <div className="mobile-showcase-intro mobile-scroll-reveal">
+                  <span className="mobile-showcase-eyebrow">SagipBayan Mobile</span>
+                  <h2 id="mobile-showcase-title">Safety information that moves with you.</h2>
+                  <p>
+                    Access Jaen hazard information, evacuation routes, incident reporting,
+                    and public-safety updates from one mobile experience.
+                  </p>
+                  <a
+                    className="mobile-showcase-cta"
+                    href="#mobile-download"
+                    onClick={(event) => {
+                      event.preventDefault();
+                      scrollToId("mobile-download");
+                    }}
+                  >
+                    Download Now <span aria-hidden="true">→</span>
+                  </a>
+                </div>
+
+                <div className="mobile-showcase-hero-phones mobile-scroll-reveal reveal-delay-1" aria-label="SagipBayan mobile app previews">
+                  <img
+                    className="mobile-showcase-hero-mockup"
+                    src={mobileHeroMockup}
+                    alt="SagipBayan login and Jaen hazard map shown on mobile phones"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="landing-wide-shell mobile-showcase-body">
+              <div className="mobile-showcase-about" id="mobile-download">
+                <div className="mobile-showcase-copy mobile-scroll-reveal">
+                  <span className="mobile-showcase-label">Download the app</span>
+                  <h3>Carry SagipBayan wherever you go</h3>
+                  <p>
+                    Access essential safety information, evacuation tools, incident reporting,
+                    and community updates directly from your mobile device.
+                  </p>
+                </div>
+
+                <div className="mobile-platform-grid mobile-scroll-reveal reveal-delay-1">
+                  <a
+                    className="mobile-platform-card mobile-platform-download"
+                    href={IOS_TESTFLIGHT_URL}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <span className="platform-mark">iOS</span>
+                    <strong>Download</strong>
+                    <small>Via TestFlight</small>
+                  </a>
+                  <a
+                    className="mobile-platform-card mobile-platform-download"
+                    href={ANDROID_APK_URL}
+                    download="SagipBayan.apk"
+                  >
+                    <span className="platform-mark platform-mark-android">A</span>
+                    <strong>Download</strong>
+                    <small>Android APK</small>
+                  </a>
+                  <article className="mobile-platform-card">
+                    <FaMapMarkedAlt />
+                    <strong>Live maps</strong>
+                    <small>Jaen-focused</small>
+                  </article>
+                  <article className="mobile-platform-card">
+                    <FaShieldAlt />
+                    <strong>Safety tools</strong>
+                    <small>Built for response</small>
+                  </article>
+                </div>
+              </div>
+
+              <div className="mobile-showcase-detail">
+                <div className="mobile-showcase-duo mobile-scroll-reveal" aria-label="SagipBayan account and evacuation previews">
+                  <img
+                    className="mobile-showcase-download-mockup"
+                    src={mobileDownloadMockup}
+                    alt="SagipBayan account and evacuation screens on mobile phones"
+                  />
+                </div>
+
+                <div className="mobile-showcase-copy mobile-showcase-copy-detail mobile-scroll-reveal reveal-delay-1">
+                  <span className="mobile-showcase-label">Made for Jaen</span>
+                  <h3>From awareness to safer action</h3>
+                  <p>
+                    View municipal boundaries, locate evacuation places, report incidents,
+                    and follow road-based navigation with timely hazard guidance.
+                  </p>
+                  <div className="mobile-showcase-pills">
+                    <span>Evacuation routing</span>
+                    <span>Incident reporting</span>
+                    <span>Hazard awareness</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mobile-feature-wave">
+              <svg
+                className="mobile-feature-wave-bg"
+                viewBox="0 0 1440 800"
+                preserveAspectRatio="none"
+                aria-hidden="true"
+                focusable="false"
+              >
+                <defs>
+                  <linearGradient id="mobileFeatureGradient" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stopColor="#006f47" />
+                    <stop offset="58%" stopColor="#08a85b" />
+                    <stop offset="100%" stopColor="#8ddd3d" />
+                  </linearGradient>
+                </defs>
+                <path
+                  d="M0 150 C115 178 170 112 282 52 C398 -10 530 8 676 7 C914 4 1168 24 1440 138 L1440 800 L0 800 Z"
+                  fill="url(#mobileFeatureGradient)"
+                />
+              </svg>
+              <div className="landing-wide-shell mobile-feature-content">
+                <div className="mobile-feature-heading mobile-scroll-reveal">
+                  <span>SagipBayan mobile</span>
+                  <h3>Awesome Features</h3>
+                </div>
+                <div className="mobile-feature-showcase">
+                  <div className="mobile-feature-list mobile-feature-list-left mobile-scroll-reveal">
+                    <article><FaMapMarkedAlt /><div><strong>Hazard Map</strong><small>View local hazard information</small></div></article>
+                    <article><FaMap /><div><strong>Evacuation Places</strong><small>Locate safer destinations</small></div></article>
+                    <article><FaShieldAlt /><div><strong>Safety Marking</strong><small>Share your safety status</small></div></article>
+                    <article><FaSms /><div><strong>Incident Reporting</strong><small>Report emergencies with details</small></div></article>
+                  </div>
+                  <img
+                    className="mobile-features-mockup mobile-scroll-reveal reveal-delay-1"
+                    src={mobileFeaturesMockup}
+                    alt="SagipBayan flood virtual twin mobile preview"
+                  />
+                  <div className="mobile-feature-list mobile-feature-list-right mobile-scroll-reveal reveal-delay-2">
+                    <article><FaMapMarkedAlt /><div><strong>Dynamic Pathfinding</strong><small>Follow road-based evacuation routes</small></div></article>
+                    <article><FaBell /><div><strong>Disaster Notifications</strong><small>Receive timely safety updates</small></div></article>
+                    <article><FaCloudSun /><div><strong>Weather Monitoring</strong><small>Stay aware of local conditions</small></div></article>
+                    <article><FaCheckCircle /><div><strong>Relief Assistance</strong><small>Access donation and relief support</small></div></article>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
 
           <footer className="dashboard-footer site-footer" id="footer-info">
             <div className="landing-wide-shell">

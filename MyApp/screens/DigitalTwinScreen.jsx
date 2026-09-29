@@ -133,6 +133,20 @@ export default function DigitalTwinScreen({ navigation, route }) {
           document.querySelector(".unity-container") ||
           document.querySelector("#unityContainer") ||
           document.querySelector(".unityContainer");
+        var unityFrame = document.querySelector("iframe");
+
+        if (unityFrame) {
+          unityFrame.style.position = "fixed";
+          unityFrame.style.inset = "0";
+          unityFrame.style.width = "100vw";
+          unityFrame.style.height = "100vh";
+          unityFrame.style.margin = "0";
+          unityFrame.style.padding = "0";
+          unityFrame.style.border = "none";
+          unityFrame.style.borderRadius = "0";
+          unityFrame.style.background = "#031b12";
+          unityFrame.style.zIndex = "2147483646";
+        }
 
         if (unityContainer) {
           unityContainer.style.position = "fixed";
@@ -300,7 +314,7 @@ export default function DigitalTwinScreen({ navigation, route }) {
       {loading && !hasError && (
         <View style={styles.loadingOverlay}>
           <View style={styles.loadingCard}>
-            <ActivityIndicator size="large" color="#f97316" />
+            <ActivityIndicator size="large" color="#7ef0ad" />
 
             <Text style={styles.loadingTitle}>Loading {featureName}</Text>
 
@@ -357,20 +371,20 @@ export default function DigitalTwinScreen({ navigation, route }) {
   );
 }
 
-const ORANGE = "#f97316";
-const GREEN = "#84cc16";
-const GLASS = "rgba(9, 12, 10, 0.72)";
-const GLASS_BORDER = "rgba(255, 255, 255, 0.16)";
+const ORANGE = "#18c978";
+const GREEN = "#7ef0ad";
+const GLASS = "rgba(3, 42, 28, 0.88)";
+const GLASS_BORDER = "rgba(126, 240, 173, 0.28)";
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000000",
+    backgroundColor: "#031b12",
   },
 
   webview: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "#000000",
+    backgroundColor: "#031b12",
   },
 
   topFade: {
@@ -379,7 +393,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 170,
-    backgroundColor: "rgba(0, 0, 0, 0.42)",
+    backgroundColor: "rgba(2, 31, 21, 0.58)",
     zIndex: 2,
   },
 
@@ -389,7 +403,7 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     height: 170,
-    backgroundColor: "rgba(0, 0, 0, 0.38)",
+    backgroundColor: "rgba(2, 31, 21, 0.66)",
     zIndex: 2,
   },
 
@@ -507,7 +521,7 @@ const styles = StyleSheet.create({
   },
 
   focusButtonText: {
-    color: "#ffffff",
+    color: "#032619",
     fontSize: 13,
     fontWeight: "900",
   },
@@ -524,7 +538,7 @@ const styles = StyleSheet.create({
   },
 
   showControlsText: {
-    color: "#ffffff",
+    color: "#032619",
     fontSize: 13,
     fontWeight: "900",
   },
@@ -532,7 +546,7 @@ const styles = StyleSheet.create({
   loadingOverlay: {
     ...StyleSheet.absoluteFillObject,
     zIndex: 30,
-    backgroundColor: "rgba(0, 0, 0, 0.76)",
+    backgroundColor: "rgba(1, 24, 16, 0.86)",
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 26,
@@ -541,7 +555,7 @@ const styles = StyleSheet.create({
   loadingCard: {
     width: "100%",
     maxWidth: 320,
-    backgroundColor: "rgba(12, 15, 13, 0.94)",
+    backgroundColor: "rgba(4, 54, 35, 0.96)",
     borderWidth: 1,
     borderColor: GLASS_BORDER,
     borderRadius: 28,
@@ -567,7 +581,7 @@ const styles = StyleSheet.create({
   errorScreen: {
     ...StyleSheet.absoluteFillObject,
     zIndex: 40,
-    backgroundColor: "#050806",
+    backgroundColor: "#021b12",
   },
 
   errorMenuButton: {
@@ -636,7 +650,7 @@ const styles = StyleSheet.create({
   },
 
   retryButtonText: {
-    color: "#ffffff",
+    color: "#032619",
     fontSize: 15,
     fontWeight: "900",
   },

@@ -5585,3 +5585,667 @@
     flex-direction: column;
   }
 }
+
+/* Mobile application showcase */
+.mobile-showcase {
+  --showcase-green: #06a957;
+  --showcase-deep: #006f47;
+  --showcase-lime: #9ee83e;
+  position: relative;
+  overflow: hidden;
+  background: #fff;
+  color: #14231b;
+}
+
+.mobile-showcase .landing-wide-shell {
+  width: min(1540px, calc(100% - 96px));
+  max-width: 1540px;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.mobile-showcase-hero {
+  position: relative;
+  min-height: 560px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #008f55 0%, #08bd65 48%, #9fe53f 100%);
+  clip-path: ellipse(92% 82% at 47% 12%);
+}
+
+.mobile-showcase-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, rgba(255, 255, 255, 0.06), transparent 44%);
+  pointer-events: none;
+}
+
+.mobile-showcase-hero-grid {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: minmax(330px, 0.62fr) minmax(720px, 1.38fr);
+  align-items: center;
+  min-height: 500px;
+  gap: 28px;
+  padding: 60px 0 105px;
+}
+
+.mobile-showcase-intro {
+  max-width: 510px;
+  color: #fff;
+}
+
+.mobile-showcase-eyebrow,
+.mobile-showcase-label {
+  display: inline-flex;
+  margin-bottom: 14px;
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.mobile-showcase-eyebrow {
+  color: #eaffc8;
+}
+
+.mobile-showcase-intro h2 {
+  margin: 0;
+  max-width: 540px;
+  color: #fff;
+  font-size: clamp(2.65rem, 5.4vw, 5.6rem);
+  line-height: 0.94;
+  letter-spacing: -0.055em;
+}
+
+.mobile-showcase-intro p {
+  max-width: 470px;
+  margin: 24px 0 28px;
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 1rem;
+  line-height: 1.72;
+}
+
+.mobile-showcase-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 13px;
+  padding: 13px 20px;
+  border: 1px solid rgba(255, 255, 255, 0.78);
+  border-radius: 999px;
+  background: #fff;
+  color: #08714d;
+  font-size: 0.82rem;
+  font-weight: 900;
+  text-decoration: none;
+  box-shadow: 0 14px 34px rgba(0, 62, 38, 0.2);
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.mobile-showcase-cta:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 18px 40px rgba(0, 62, 38, 0.28);
+}
+
+.mobile-showcase-hero-phones,
+.mobile-showcase-duo {
+  position: relative;
+  min-height: 510px;
+}
+
+.mobile-showcase-hero-phones,
+.mobile-showcase-duo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mobile-showcase-hero-mockup {
+  display: block;
+  width: min(158%, 1320px);
+  max-width: none;
+  height: auto;
+  filter: drop-shadow(0 34px 30px rgba(0, 54, 32, 0.28));
+  transform: translate(2%, -2px);
+}
+
+.showcase-phone {
+  position: absolute;
+  overflow: hidden;
+  padding: 12px;
+  border: 2px solid rgba(236, 245, 240, 0.92);
+  border-radius: 34px;
+  background: linear-gradient(145deg, #fdfefe, #d5ddd9);
+  box-shadow:
+    0 35px 55px rgba(0, 44, 29, 0.28),
+    0 8px 14px rgba(0, 44, 29, 0.18),
+    inset 0 0 0 3px #fff;
+}
+
+.showcase-phone::after {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  z-index: 2;
+  border-radius: 24px;
+  box-shadow: inset 0 0 0 1px rgba(4, 36, 25, 0.22);
+  pointer-events: none;
+}
+
+.showcase-phone img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 23px;
+  object-fit: cover;
+  object-position: top center;
+}
+
+.showcase-phone-speaker {
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  z-index: 4;
+  width: 46px;
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(8, 25, 18, 0.72);
+  transform: translateX(-50%);
+}
+
+.showcase-phone-small {
+  width: 220px;
+  height: 445px;
+  left: 5%;
+  top: 55px;
+  transform: rotate(-15deg) perspective(900px) rotateY(8deg);
+}
+
+.showcase-phone-large {
+  width: 264px;
+  height: 520px;
+  right: 5%;
+  top: -8px;
+  transform: rotate(13deg) perspective(900px) rotateY(-7deg);
+}
+
+.mobile-showcase-body {
+  padding-top: 26px;
+  padding-bottom: 42px;
+}
+
+.mobile-showcase-about,
+.mobile-showcase-detail {
+  display: grid;
+  grid-template-columns: minmax(300px, 1fr) minmax(380px, 1fr);
+  align-items: center;
+  gap: clamp(40px, 6vw, 90px);
+  padding: 44px 0;
+}
+
+#mobile-download {
+  scroll-margin-top: 145px;
+}
+
+.mobile-showcase-copy {
+  max-width: 560px;
+}
+
+.mobile-showcase-label {
+  color: var(--showcase-green);
+}
+
+.mobile-showcase-copy h3,
+.mobile-feature-heading h3 {
+  margin: 0;
+  color: #10281c;
+  font-size: clamp(2rem, 3.5vw, 3.7rem);
+  line-height: 1.02;
+  letter-spacing: -0.045em;
+}
+
+.mobile-showcase-copy p {
+  margin: 20px 0 0;
+  color: #5b6b62;
+  font-size: 1rem;
+  line-height: 1.78;
+}
+
+.mobile-platform-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.mobile-platform-card {
+  display: flex;
+  min-height: 155px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 22px;
+  border: 1px solid #e8eee9;
+  border-radius: 22px;
+  background: #fff;
+  text-align: center;
+  box-shadow: 0 18px 42px rgba(14, 62, 39, 0.09);
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.mobile-platform-download {
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.mobile-platform-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 22px 48px rgba(14, 62, 39, 0.14);
+}
+
+.mobile-platform-card > svg,
+.platform-mark {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  margin-bottom: 12px;
+  place-items: center;
+  color: var(--showcase-green);
+  font-size: 1.6rem;
+  font-weight: 950;
+}
+
+.mobile-platform-card > svg {
+  padding: 7px;
+}
+
+.platform-mark-android {
+  border-radius: 13px;
+  background: #eaf9ee;
+}
+
+.mobile-platform-card strong {
+  color: #193326;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+}
+
+.mobile-platform-card small {
+  margin-top: 5px;
+  color: #11a85e;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.mobile-showcase-detail {
+  grid-template-columns: minmax(680px, 1.3fr) minmax(360px, 0.7fr);
+  min-height: 440px;
+}
+
+.mobile-showcase-duo {
+  min-height: 420px;
+}
+
+.mobile-showcase-download-mockup {
+  display: block;
+  width: min(205%, 1420px);
+  max-width: none;
+  height: auto;
+  filter: drop-shadow(0 30px 30px rgba(9, 53, 33, 0.2));
+  transform: translateX(-1%);
+}
+
+.showcase-phone-detail {
+  width: 245px;
+  height: 510px;
+  top: 50px;
+}
+
+.showcase-phone-boundaries {
+  left: 5%;
+  z-index: 1;
+  transform: rotate(-8deg);
+}
+
+.showcase-phone-navigation {
+  right: 3%;
+  top: 0;
+  z-index: 2;
+  transform: rotate(7deg);
+}
+
+.mobile-showcase-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: 28px;
+}
+
+.mobile-showcase-pills span {
+  padding: 9px 13px;
+  border: 1px solid #cde8d8;
+  border-radius: 999px;
+  background: #f2fbf5;
+  color: #13794f;
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.mobile-feature-wave {
+  position: relative;
+  margin-top: 15px;
+  padding: 120px 0 78px;
+  overflow: hidden;
+  background: #fff;
+  color: #fff;
+}
+
+.mobile-feature-wave-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* The showcase already ends with its own full-width color block. */
+.mobile-showcase + .dashboard-footer {
+  margin-top: 0;
+}
+
+.mobile-feature-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 34px;
+}
+
+.mobile-feature-heading span {
+  display: block;
+  margin-bottom: 12px;
+  color: #dfffbd;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.mobile-feature-heading h3 {
+  color: #fff;
+}
+
+.mobile-feature-heading {
+  max-width: 740px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.mobile-feature-showcase {
+  display: grid;
+  width: 100%;
+  grid-template-columns: minmax(280px, 0.78fr) minmax(620px, 1.44fr) minmax(280px, 0.78fr);
+  align-items: center;
+  gap: clamp(18px, 2.5vw, 38px);
+}
+
+.mobile-features-mockup {
+  display: block;
+  width: 100%;
+  max-width: 820px;
+  justify-self: center;
+  margin: 0 auto;
+  filter: drop-shadow(0 28px 28px rgba(0, 45, 29, 0.3));
+}
+
+.mobile-feature-list {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+}
+
+.mobile-feature-list article {
+  display: flex;
+  min-height: 102px;
+  align-items: center;
+  gap: 15px;
+  padding: 21px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+}
+
+.mobile-feature-list svg {
+  flex: 0 0 auto;
+  width: 38px;
+  height: 38px;
+  padding: 9px;
+  border-radius: 50%;
+  background: #fff;
+  color: #078954;
+}
+
+.mobile-feature-list strong,
+.mobile-feature-list small {
+  display: block;
+}
+
+.mobile-feature-list strong {
+  margin-bottom: 5px;
+  color: #fff;
+  font-size: 0.92rem;
+}
+
+.mobile-feature-list small {
+  color: rgba(255, 255, 255, 0.75);
+  line-height: 1.45;
+}
+
+@media (max-width: 980px) {
+  .mobile-showcase .landing-wide-shell {
+    width: min(780px, calc(100% - 48px));
+  }
+
+  .mobile-showcase-hero-grid,
+  .mobile-showcase-about,
+  .mobile-showcase-detail,
+  .mobile-feature-content {
+    grid-template-columns: 1fr;
+  }
+
+  .mobile-showcase-hero {
+    clip-path: ellipse(125% 83% at 50% 11%);
+  }
+
+  .mobile-showcase-hero-grid {
+    padding-bottom: 135px;
+  }
+
+  .mobile-showcase-intro {
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .mobile-showcase-intro p {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .mobile-showcase-hero-phones {
+    width: min(600px, 100%);
+    margin: 0 auto;
+  }
+
+  .mobile-showcase-hero-mockup {
+    width: min(152%, 980px);
+    transform: none;
+  }
+
+  .mobile-showcase-about {
+    padding-top: 35px;
+  }
+
+  .mobile-showcase-detail {
+    min-height: auto;
+  }
+
+  .mobile-showcase-copy,
+  .mobile-showcase-copy-detail {
+    max-width: 680px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .mobile-showcase-pills {
+    justify-content: center;
+  }
+
+  .mobile-showcase-duo {
+    width: min(620px, 100%);
+    margin: 0 auto;
+  }
+
+  .mobile-showcase-download-mockup {
+    width: min(180%, 1080px);
+    transform: none;
+  }
+
+  .mobile-feature-wave {
+    padding-top: 135px;
+  }
+
+  .mobile-feature-heading {
+    max-width: 650px;
+    text-align: center;
+    margin: 0 auto;
+  }
+
+  .mobile-feature-showcase {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .mobile-features-mockup {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    width: 128%;
+    max-width: 860px;
+  }
+}
+
+@media (max-width: 640px) {
+  .mobile-showcase .landing-wide-shell {
+    width: calc(100% - 28px);
+  }
+
+  .mobile-showcase-hero {
+    min-height: 860px;
+    clip-path: ellipse(165% 82% at 50% 10%);
+  }
+
+  .mobile-showcase-hero-grid {
+    gap: 26px;
+    padding: 58px 0 150px;
+  }
+
+  .mobile-showcase-intro h2 {
+    font-size: clamp(2.4rem, 13vw, 3.7rem);
+  }
+
+  .mobile-showcase-hero-phones {
+    min-height: 390px;
+    transform: none;
+  }
+
+  .mobile-showcase-hero-mockup {
+    width: 152%;
+  }
+
+  .mobile-showcase-body {
+    padding-top: 0;
+    padding-bottom: 55px;
+  }
+
+  .mobile-showcase-about,
+  .mobile-showcase-detail {
+    gap: 45px;
+    padding: 38px 0;
+  }
+
+  .mobile-platform-grid,
+  .mobile-feature-list {
+    grid-template-columns: 1fr;
+  }
+
+  .mobile-platform-card {
+    min-height: 135px;
+  }
+
+  .mobile-showcase-duo {
+    min-height: 330px;
+    transform: none;
+    margin-bottom: 0;
+  }
+
+  .mobile-showcase-download-mockup {
+    width: 174%;
+  }
+
+  .mobile-feature-wave {
+    padding: 125px 0 80px;
+  }
+
+  .mobile-feature-content {
+    gap: 38px;
+  }
+
+  .mobile-feature-showcase {
+    grid-template-columns: 1fr;
+  }
+
+  .mobile-features-mockup {
+    grid-column: auto;
+    grid-row: auto;
+    width: 148%;
+    max-width: 540px;
+    justify-self: center;
+  }
+}
+
+/* Scroll-triggered entrance motion for the mobile showcase. */
+.mobile-scroll-reveal {
+  opacity: 0;
+  transform: translate3d(0, 48px, 0) scale(0.985);
+  transition:
+    opacity 700ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 780ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+
+.mobile-scroll-reveal.reveal-delay-1 {
+  transition-delay: 110ms;
+}
+
+.mobile-scroll-reveal.reveal-delay-2 {
+  transition-delay: 220ms;
+}
+
+.mobile-scroll-reveal.is-revealed {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mobile-scroll-reveal,
+  .mobile-scroll-reveal.reveal-delay-1,
+  .mobile-scroll-reveal.reveal-delay-2 {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
