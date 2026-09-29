@@ -11,6 +11,8 @@ router.put("/safe/:id", connectionController.markSafe);
 router.put("/not-safe/:id", connectionController.markNotSafe);
 router.delete("/delete/:connectionId/:userId", connectionController.deleteConnection);
 router.put("/kick/:connectionId/:memberId/:userId", connectionController.kickMember);
+router.put("/rename/:connectionId/:userId", connectionController.renameConnection);
+router.put("/transfer/:connectionId/:newOwnerId/:userId", connectionController.transferOwnership);
 router.put("/approve/:connectionId/:memberId/:userId", connectionController.approveMember);
 router.put("/approve/:connectionId/:memberId", connectionController.approveMember);
 router.put("/reject/:connectionId/:memberId/:userId", connectionController.rejectMember);

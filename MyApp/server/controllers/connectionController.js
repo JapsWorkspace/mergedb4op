@@ -21,6 +21,14 @@ function hasMember(list, userId) {
   return Array.isArray(list) && list.some((id) => idsMatch(id, userId));
 }
 
+function sanitizeGroupName(name) {
+  return String(name || "")
+    .replace(/[<>$]/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 50);
+}
+
 function toFiniteCoordinate(value) {
   const coordinate = Number(value);
   return Number.isFinite(coordinate) ? coordinate : null;
@@ -322,10 +330,17 @@ const markNotSafe = async (req, res) => {
 const createConnection = async (req, res) => {
   try {
     const userId = req.params.id;
+    const name = sanitizeGroupName(req.body?.name);
     const user = await ensureUserExists(userId);
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
+    }
+
+    if (name.length < 2) {
+      return res.status(400).json({
+        message: "Enter a group name with at least 2 characters.",
+      });
     }
 
     let code;
@@ -338,6 +353,7 @@ const createConnection = async (req, res) => {
     }
 
     const connection = await ConnectionModel.create({
+      name,
       code,
       creator: userId,
       members: [userId],
@@ -350,12 +366,192 @@ const createConnection = async (req, res) => {
 
     return res.json({
       message: "Connection created successfully.",
+      name: connection.name,
       code,
       connectionId: connection._id,
     });
   } catch (err) {
     console.error("Create connection error:", err);
     return res.status(500).json({ message: "Server error" });
+  }
+};
+
+const transferOwnership = async (req, res) => {
+  try {
+    const { connectionId, newOwnerId, userId } = req.params;
+
+    if (
+      !mongoose.Types.ObjectId.isValid(connectionId) ||
+      !mongoose.Types.ObjectId.isValid(newOwnerId) ||
+      !mongoose.Types.ObjectId.isValid(userId)
+    ) {
+      return res.status(400).json({ message: "Invalid ownership transfer request." });
+    }
+
+    const connection = await ConnectionModel.findById(connectionId);
+    if (!connection) {
+      return res.status(404).json({ message: "Connection not found" });
+    }
+
+    if (!idsMatch(connection.creator, userId)) {
+      return res.status(403).json({ message: "Only the current owner can transfer ownership." });
+    }
+
+    if (idsMatch(userId, newOwnerId)) {
+      return res.status(400).json({ message: "You are already the owner of this group." });
+    }
+
+    if (!hasMember(connection.members, newOwnerId)) {
+      return res.status(400).json({ message: "Ownership can only be transferred to a group member." });
+    }
+
+    const [currentOwner, newOwner] = await Promise.all([
+      UserModel.findById(userId).select("fname lname username avatar"),
+      UserModel.findById(newOwnerId).select("fname lname username avatar"),
+    ]);
+
+    if (!newOwner) {
+      return res.status(404).json({ message: "The selected member no longer exists." });
+    }
+
+    connection.creator = newOwner._id;
+    connection.members.addToSet(currentOwner?._id || userId);
+    connection.members.addToSet(newOwner._id);
+    await connection.save();
+
+    const groupLabel = connection.name || connection.code;
+    const newOwnerName =
+      [newOwner.fname, newOwner.lname].filter(Boolean).join(" ").trim() ||
+      newOwner.username ||
+      "The selected member";
+    const previousOwnerName =
+      [currentOwner?.fname, currentOwner?.lname].filter(Boolean).join(" ").trim() ||
+      currentOwner?.username ||
+      "The previous owner";
+
+    await Promise.all([
+      addNotification(newOwner._id, {
+        type: "CONNECTION_OWNERSHIP_TRANSFERRED",
+        message: `${previousOwnerName} made you the owner of ${groupLabel}.`,
+        connectionId: connection._id,
+        actorUserId: currentOwner?._id || userId,
+        actorName: previousOwnerName,
+        actorUsername: currentOwner?.username || "",
+        actorAvatar: currentOwner?.avatar || "",
+        connectionCode: connection.code,
+      }),
+      addNotification(userId, {
+        type: "CONNECTION_OWNERSHIP_TRANSFERRED",
+        message: `You transferred ownership of ${groupLabel} to ${newOwnerName}.`,
+        connectionId: connection._id,
+        actorUserId: newOwner._id,
+        actorName: newOwnerName,
+        actorUsername: newOwner.username || "",
+        actorAvatar: newOwner.avatar || "",
+        connectionCode: connection.code,
+      }),
+    ]);
+
+    return res.json({
+      message: `${newOwnerName} is now the group owner.`,
+      connectionId: connection._id,
+      newOwnerId: newOwner._id,
+    });
+  } catch (err) {
+    console.error("Transfer ownership error:", err);
+    return res.status(500).json({ message: "Failed to transfer group ownership." });
+  }
+};
+
+const renameConnection = async (req, res) => {
+  try {
+    const { connectionId, userId } = req.params;
+    const name = sanitizeGroupName(req.body?.name);
+
+    if (
+      !mongoose.Types.ObjectId.isValid(connectionId) ||
+      !mongoose.Types.ObjectId.isValid(userId)
+    ) {
+      return res.status(400).json({ message: "Invalid group rename request." });
+    }
+
+    if (name.length < 2) {
+      return res.status(400).json({
+        message: "Enter a group name with at least 2 characters.",
+      });
+    }
+
+    const connection = await ConnectionModel.findById(connectionId);
+    if (!connection) {
+      return res.status(404).json({ message: "Connection not found" });
+    }
+
+    if (!idsMatch(connection.creator, userId)) {
+      return res.status(403).json({ message: "Only the group owner can change its name." });
+    }
+
+    const previousName = connection.name || `Group ${connection.code}`;
+    const owner = await UserModel.findById(userId).select(
+      "fname lname username avatar"
+    );
+    connection.name = name;
+    await connection.save();
+
+    const ownerName =
+      [owner?.fname, owner?.lname].filter(Boolean).join(" ").trim() ||
+      owner?.username ||
+      "The group owner";
+    const recipientIds = [...new Set(
+      (connection.members || [])
+        .map((memberId) => String(memberId))
+        .filter((memberId) => memberId && !idsMatch(memberId, userId))
+    )];
+    const notificationMessage = `${ownerName} changed the group name from "${previousName}" to "${name}".`;
+
+    await Promise.all(
+      recipientIds.map((memberId) =>
+        addNotification(memberId, {
+          type: "CONNECTION_RENAMED",
+          message: notificationMessage,
+          connectionId: connection._id,
+          actorUserId: owner?._id || userId,
+          actorName: ownerName,
+          actorUsername: owner?.username || "",
+          actorAvatar: owner?.avatar || "",
+          connectionCode: connection.code,
+          actionable: false,
+        })
+      )
+    );
+
+    const pushRecipients = await UserModel.find({
+      _id: { $in: recipientIds },
+      "notificationTokens.0": { $exists: true },
+    })
+      .select("_id notificationTokens")
+      .lean();
+
+    await sendExpoPushNotifications(pushRecipients, {
+      title: "Group name updated",
+      body: notificationMessage,
+      soundType: "notification",
+      priority: "default",
+      data: {
+        type: "CONNECTION_RENAMED",
+        connectionId: String(connection._id),
+        connectionCode: connection.code,
+        screen: "SafetyMark",
+      },
+    });
+
+    return res.json({
+      message: "Group name updated successfully.",
+      connectionId: connection._id,
+      name: connection.name,
+    });
+  } catch (err) {
+    console.error("Rename connection error:", err);
+    return res.status(500).json({ message: "Failed to update the group name." });
   }
 };
 
@@ -747,5 +943,7 @@ module.exports = {
   approveMember,
   rejectMember,
   kickMember,
+  renameConnection,
+  transferOwnership,
   deleteConnection,
 };

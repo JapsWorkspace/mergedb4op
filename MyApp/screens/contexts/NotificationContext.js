@@ -59,6 +59,14 @@ const MESSAGE_META = {
     title: "Member left",
     icon: "exit-outline",
   },
+  connection_renamed: {
+    title: "Group name updated",
+    icon: "create-outline",
+  },
+  connection_ownership_transferred: {
+    title: "Group ownership updated",
+    icon: "ribbon-outline",
+  },
   safety_safe: {
     title: "Marked safe",
     icon: "shield-checkmark-outline",

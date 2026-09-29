@@ -26,7 +26,7 @@ import {
 } from "react-native";
 import { useFocusEffect, useNavigation, useRoute } from "@react-navigation/native";
 import MapView, { Circle, Marker, Polygon, PROVIDER_GOOGLE } from "react-native-maps";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { Picker } from "@react-native-picker/picker";
 import ViewShot from "react-native-view-shot";
 
@@ -93,6 +93,11 @@ const SAFETY_STATUS_OPTIONS = [
 ];
 
 const safeArray = (value) => (Array.isArray(value) ? value : []);
+const sanitizeGroupName = (value) =>
+  String(value || "")
+    .replace(/[<>$]/g, "")
+    .replace(/\s+/g, " ")
+    .slice(0, 50);
 const getDebugMarkerPayload = (data) => {
   if (Array.isArray(data)) return data;
   if (Array.isArray(data?.markers)) return data.markers;
@@ -461,7 +466,10 @@ function normalizeConnection(connection, currentUserId) {
       insideJaen: hasCoords(member.location)
         ? isPointInsideJaen(member.location.lat, member.location.lng)
         : false,
-      canKick: creatorId === currentUserId && member._id !== currentUserId,
+      isOwner: String(member._id) === String(creatorId),
+      canKick:
+        String(creatorId) === String(currentUserId) &&
+        String(member._id) !== String(currentUserId),
     }));
 
   const pendingMembers = safeArray(connection.pendingMembers)
@@ -477,8 +485,10 @@ function normalizeConnection(connection, currentUserId) {
 
   return {
     id: connection._id,
+    name: safeDisplayText(connection.name, `Group ${connection.code || ""}`.trim()),
     code: safeDisplayText(connection.code, "No code"),
-    isCreator: creatorId === currentUserId,
+    creatorId: creatorId ? String(creatorId) : null,
+    isCreator: String(creatorId) === String(currentUserId),
     members,
     pendingMembers,
   };
@@ -768,6 +778,9 @@ export default function SafetyMark() {
 
   const [connections, setConnections] = useState([]);
   const [joinCode, setJoinCode] = useState("");
+  const [newGroupName, setNewGroupName] = useState("");
+  const [editingGroupId, setEditingGroupId] = useState(null);
+  const [groupNameDraft, setGroupNameDraft] = useState("");
   const [selectedConnectionId, setSelectedConnectionId] = useState(null);
   const [activeTab, setActiveTab] = useState("status");
   const [localSafetyStatus, setLocalSafetyStatus] = useState(
@@ -785,6 +798,8 @@ export default function SafetyMark() {
   const [joinRequestModalMessage, setJoinRequestModalMessage] = useState(
     "Wait for the approval of the admin."
   );
+  const [ownershipTransferTarget, setOwnershipTransferTarget] = useState(null);
+  const [ownershipTransferSubmitting, setOwnershipTransferSubmitting] = useState(false);
   const isSafetyLocationSharingEnabled = user?.shareSafetyLocation === true;
 
   const panelExpandedTop = SCREEN_HEIGHT * 0.44;
@@ -1234,6 +1249,7 @@ export default function SafetyMark() {
         connection.isCreator
           ? connection.pendingMembers.map((member) => ({
               connectionId: connection.id,
+              connectionName: connection.name,
               connectionCode: connection.code,
               member,
             }))
@@ -1456,7 +1472,7 @@ export default function SafetyMark() {
     }
 
     return {
-      title: selectedConnection ? `Connection ${selectedConnection.code}` : "Connection Status",
+      title: selectedConnection?.name || "Group Status",
       subtitle: selectedConnection
         ? `${selectedConnectionMembers.length} members in this group`
         : "Choose a group to inspect safety updates.",
@@ -1584,19 +1600,26 @@ export default function SafetyMark() {
 
   const handleCreateConnection = async () => {
     if (!user?._id) return;
+    const name = sanitizeGroupName(newGroupName).trim();
+
+    if (name.length < 2) {
+      Alert.alert("Group Name Required", "Enter a group name with at least 2 characters.");
+      return;
+    }
 
     try {
-      const res = await api.post(`/connection/create/${user._id}`);
+      const res = await api.post(`/connection/create/${user._id}`, { name });
+      setNewGroupName("");
       await refreshAll();
       await refreshNotifications();
       Alert.alert(
-        "Connection Created",
+        "Group Created",
         res?.data?.code
-          ? `Connection code: ${res.data.code}`
-          : res?.data?.message || "Connection created successfully."
+          ? `${res?.data?.name || name}\nInvite code: ${res.data.code}`
+          : res?.data?.message || "Group created successfully."
       );
     } catch (err) {
-      Alert.alert("Error", err?.response?.data?.message || "Failed to create connection.");
+      Alert.alert("Error", err?.response?.data?.message || "Failed to create group.");
     }
   };
 
@@ -1754,6 +1777,65 @@ export default function SafetyMark() {
         },
       },
     ]);
+  };
+
+  const handleRenameConnection = async (connection) => {
+    if (!user?._id || !connection?.id || !connection?.isCreator) return;
+    const name = sanitizeGroupName(groupNameDraft).trim();
+
+    if (name.length < 2) {
+      Alert.alert("Group Name Required", "Enter a group name with at least 2 characters.");
+      return;
+    }
+
+    try {
+      const res = await api.put(
+        `/connection/rename/${connection.id}/${user._id}`,
+        { name }
+      );
+      setEditingGroupId(null);
+      setGroupNameDraft("");
+      await refreshAll();
+      Alert.alert("Group Renamed", res?.data?.message || "Group name updated successfully.");
+    } catch (err) {
+      Alert.alert(
+        "Rename Failed",
+        err?.response?.data?.message || "Failed to update the group name."
+      );
+    }
+  };
+
+  const handleTransferOwnership = (connection, member) => {
+    if (!user?._id || !connection?.id || !member?.id) return;
+
+    setOwnershipTransferTarget({ connection, member });
+  };
+
+  const confirmTransferOwnership = async () => {
+    const connection = ownershipTransferTarget?.connection;
+    const member = ownershipTransferTarget?.member;
+    if (!user?._id || !connection?.id || !member?.id || ownershipTransferSubmitting) return;
+
+    try {
+      setOwnershipTransferSubmitting(true);
+      const res = await api.put(
+        `/connection/transfer/${connection.id}/${member.id}/${user._id}`
+      );
+      setOwnershipTransferTarget(null);
+      await refreshAll();
+      await refreshNotifications();
+      Alert.alert(
+        "Ownership Transferred",
+        res?.data?.message || `${member.name || member.username} is now the group owner.`
+      );
+    } catch (err) {
+      Alert.alert(
+        "Transfer Failed",
+        err?.response?.data?.message || "Failed to transfer group ownership."
+      );
+    } finally {
+      setOwnershipTransferSubmitting(false);
+    }
   };
 
   const handleApproveRequest = async (connectionId, memberId) => {
@@ -2029,7 +2111,7 @@ export default function SafetyMark() {
                         {connections.map((connection) => (
                           <Picker.Item
                             key={connection.id}
-                            label={`Connection ${connection.code}`}
+                            label={`${connection.name} (${connection.code})`}
                             value={connection.id}
                           />
                         ))}
@@ -2047,10 +2129,10 @@ export default function SafetyMark() {
                         </View>
                       </View>
                       <Text style={[styles.statusSummaryTitle, themed.text]}>
-                        {selectedConnection?.code || "Connection"}
+                        {selectedConnection?.name || "Group"}
                       </Text>
                       <Text style={[styles.statusSummaryMeta, themed.subtext]}>
-                        {selectedConnectionMembers.length} members in this group
+                        Code {selectedConnection?.code || "—"} • {selectedConnectionMembers.length} members
                       </Text>
                     </View>
 
@@ -2064,7 +2146,21 @@ export default function SafetyMark() {
                       {selectedConnectionMembers.map((member) => (
                         <View key={member.id} style={[styles.personRow, themed.card]}>
                           <View style={styles.personCopy}>
-                            <Text style={[styles.personName, themed.text]}>{member.username}</Text>
+                            <View style={styles.personNameRow}>
+                              <Text style={[styles.personName, themed.text]}>{member.username}</Text>
+                              {member.isOwner && (
+                                <View
+                                  style={styles.ownerCrown}
+                                  accessibilityLabel="Group owner"
+                                >
+                                  <MaterialCommunityIcons
+                                    name="crown"
+                                    size={17}
+                                    color="#D99A16"
+                                  />
+                                </View>
+                              )}
+                            </View>
                             <View style={styles.personStatusRow}>
                               <View
                                 style={[
@@ -2135,10 +2231,10 @@ export default function SafetyMark() {
                         <View style={styles.connectionCardHead}>
                           <View style={styles.connectionCardCopy}>
                             <Text style={[styles.connectionCardTitle, themed.text]}>
-                              Connection {connection.code}
+                              {connection.name}
                             </Text>
                             <Text style={[styles.connectionCardMeta, themed.subtext]}>
-                              {connection.members.length} members
+                              Code {connection.code} • {connection.members.length} members
                             </Text>
                           </View>
                           {active && (
@@ -2147,6 +2243,41 @@ export default function SafetyMark() {
                             </View>
                           )}
                         </View>
+
+                        {connection.isCreator && editingGroupId === connection.id && (
+                          <View style={[styles.renameGroupPanel, themed.softCard]}>
+                            <Text style={[styles.renameGroupLabel, themed.text]}>Group name</Text>
+                            <TextInput
+                              style={[styles.input, themed.input]}
+                              value={groupNameDraft}
+                              onChangeText={(value) =>
+                                setGroupNameDraft(sanitizeGroupName(value))
+                              }
+                              placeholder="Enter group name"
+                              placeholderTextColor={theme.subtext}
+                              autoCapitalize="words"
+                              autoCorrect={false}
+                              maxLength={50}
+                            />
+                            <View style={styles.renameGroupActions}>
+                              <Pressable
+                                style={[styles.renameGroupCancel, themed.secondaryButton]}
+                                onPress={() => {
+                                  setEditingGroupId(null);
+                                  setGroupNameDraft("");
+                                }}
+                              >
+                                <Text style={[styles.renameGroupCancelText, themed.text]}>Cancel</Text>
+                              </Pressable>
+                              <Pressable
+                                style={styles.renameGroupSave}
+                                onPress={() => handleRenameConnection(connection)}
+                              >
+                                <Text style={styles.renameGroupSaveText}>Save name</Text>
+                              </Pressable>
+                            </View>
+                          </View>
+                        )}
 
                         <View style={styles.connectionCardActions}>
                           <Pressable
@@ -2160,12 +2291,23 @@ export default function SafetyMark() {
                           </Pressable>
 
                           {connection.isCreator ? (
-                            <Pressable
-                              style={styles.connectionActionDanger}
-                              onPress={() => handleDeleteConnection(connection.id)}
-                            >
-                              <Text style={styles.connectionActionDangerText}>Delete</Text>
-                            </Pressable>
+                            <>
+                              <Pressable
+                                style={[styles.connectionActionNeutral, themed.secondaryButton]}
+                                onPress={() => {
+                                  setEditingGroupId(connection.id);
+                                  setGroupNameDraft(connection.name);
+                                }}
+                              >
+                                <Text style={[styles.connectionActionNeutralText, themed.text]}>Rename</Text>
+                              </Pressable>
+                              <Pressable
+                                style={styles.connectionActionDanger}
+                                onPress={() => handleDeleteConnection(connection.id)}
+                              >
+                                <Text style={styles.connectionActionDangerText}>Delete</Text>
+                              </Pressable>
+                            </>
                           ) : (
                             <Pressable
                               style={[styles.connectionActionNeutral, themed.secondaryButton]}
@@ -2175,6 +2317,43 @@ export default function SafetyMark() {
                             </Pressable>
                           )}
                         </View>
+
+                        {connection.isCreator && connection.members.length > 1 && (
+                          <View style={[styles.transferOwnerPanel, themed.softCard]}>
+                            <View style={styles.transferOwnerHeading}>
+                              <Ionicons name="swap-horizontal" size={18} color={theme.primary} />
+                              <View style={styles.transferOwnerHeadingCopy}>
+                                <Text style={[styles.transferOwnerTitle, themed.text]}>
+                                  Transfer ownership
+                                </Text>
+                                <Text style={[styles.transferOwnerHint, themed.subtext]}>
+                                  Choose a member to become the new group owner.
+                                </Text>
+                              </View>
+                            </View>
+                            {connection.members
+                              .filter((member) => String(member.id) !== String(user?._id))
+                              .map((member) => (
+                                <View key={`transfer-${connection.id}-${member.id}`} style={styles.transferOwnerRow}>
+                                  <Image source={{ uri: member.avatar }} style={styles.transferOwnerAvatar} />
+                                  <View style={styles.transferOwnerMemberCopy}>
+                                    <Text style={[styles.transferOwnerMemberName, themed.text]}>
+                                      {member.name}
+                                    </Text>
+                                    <Text style={[styles.transferOwnerMemberUsername, themed.subtext]}>
+                                      @{member.username}
+                                    </Text>
+                                  </View>
+                                  <Pressable
+                                    style={styles.transferOwnerButton}
+                                    onPress={() => handleTransferOwnership(connection, member)}
+                                  >
+                                    <Text style={styles.transferOwnerButtonText}>Make owner</Text>
+                                  </Pressable>
+                                </View>
+                              ))}
+                          </View>
+                        )}
                       </View>
                     );
                   })
@@ -2188,13 +2367,13 @@ export default function SafetyMark() {
                         Approve or reject people waiting to join your connection.
                       </Text>
                     </View>
-                    {pendingRequests.map(({ connectionId, connectionCode, member }) => (
+                    {pendingRequests.map(({ connectionId, connectionName, connectionCode, member }) => (
                       <View key={`${connectionId}-${member.id}`} style={[styles.pendingRow, themed.card]}>
                         <Image source={{ uri: member.avatar }} style={styles.pendingAvatar} />
                         <View style={styles.pendingCopy}>
                           <Text style={[styles.pendingName, themed.text]}>{member.name}</Text>
                           <Text style={[styles.pendingMeta, themed.subtext]}>
-                            @{member.username} • Request for {connectionCode}
+                            @{member.username} • Request for {connectionName} ({connectionCode})
                           </Text>
                         </View>
                         <Pressable
@@ -2259,10 +2438,20 @@ export default function SafetyMark() {
                 <View style={[styles.formCard, themed.card]}>
                   <Text style={[styles.formLabel, themed.text]}>Start a new group</Text>
                   <Text style={[styles.formHint, themed.subtext]}>
-                    Create a connection and invite people using the generated code.
+                    Name your group, then invite people using its generated code.
                   </Text>
+                  <TextInput
+                    style={[styles.input, themed.input]}
+                    value={newGroupName}
+                    onChangeText={(value) => setNewGroupName(sanitizeGroupName(value))}
+                    placeholder="Example: Reyes Family"
+                    placeholderTextColor={theme.subtext}
+                    autoCapitalize="words"
+                    autoCorrect={false}
+                    maxLength={50}
+                  />
                   <Pressable style={[styles.createWideButton, themed.secondaryButton]} onPress={handleCreateConnection}>
-                    <Text style={[styles.createWideButtonText, themed.primaryText]}>Create New Connection</Text>
+                    <Text style={[styles.createWideButtonText, themed.primaryText]}>Create New Group</Text>
                   </Pressable>
                 </View>
               </View>
@@ -2270,6 +2459,69 @@ export default function SafetyMark() {
           </ScrollView>
         </Animated.View>
       </KeyboardAvoidingView>
+
+      <Modal
+        visible={Boolean(ownershipTransferTarget)}
+        transparent
+        animationType="fade"
+        onRequestClose={() => {
+          if (!ownershipTransferSubmitting) setOwnershipTransferTarget(null);
+        }}
+      >
+        <View style={[styles.modalBackdrop, themed.modalBackdrop]}>
+          <View style={[styles.modalCard, themed.modalCard]}>
+            <View style={styles.transferModalCrownWrap}>
+              <MaterialCommunityIcons name="crown" size={34} color="#D99A16" />
+            </View>
+            <Text style={[styles.modalTitle, themed.text]}>Pass Group Ownership?</Text>
+            <Text style={[styles.transferModalGroupName, themed.primaryText]}>
+              {ownershipTransferTarget?.connection?.name}
+            </Text>
+            <View style={[styles.transferModalMember, themed.softCard]}>
+              <Image
+                source={{ uri: ownershipTransferTarget?.member?.avatar }}
+                style={styles.transferModalAvatar}
+              />
+              <View style={styles.transferModalMemberCopy}>
+                <Text style={[styles.transferModalMemberName, themed.text]}>
+                  {ownershipTransferTarget?.member?.name ||
+                    ownershipTransferTarget?.member?.username}
+                </Text>
+                <Text style={[styles.transferModalUsername, themed.subtext]}>
+                  @{ownershipTransferTarget?.member?.username}
+                </Text>
+              </View>
+            </View>
+            <Text style={[styles.modalMessage, themed.subtext]}>
+              The crown and owner permissions will move to this member. You will remain in the
+              group, but only the new owner can approve requests, remove members, rename or
+              delete the group, and transfer ownership again.
+            </Text>
+            <View style={styles.transferModalActions}>
+              <Pressable
+                disabled={ownershipTransferSubmitting}
+                style={[styles.transferModalCancel, themed.secondaryButton]}
+                onPress={() => setOwnershipTransferTarget(null)}
+              >
+                <Text style={[styles.transferModalCancelText, themed.text]}>Cancel</Text>
+              </Pressable>
+              <Pressable
+                disabled={ownershipTransferSubmitting}
+                style={[
+                  styles.transferModalConfirm,
+                  ownershipTransferSubmitting && styles.transferModalButtonDisabled,
+                ]}
+                onPress={confirmTransferOwnership}
+              >
+                <MaterialCommunityIcons name="crown" size={16} color="#FFFFFF" />
+                <Text style={styles.transferModalConfirmText}>
+                  {ownershipTransferSubmitting ? "Transferring..." : "Pass the crown"}
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       <Modal
         visible={joinRequestModalVisible}
@@ -2876,6 +3128,57 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
 
+  renameGroupPanel: {
+    marginTop: 12,
+    padding: 12,
+    borderRadius: 16,
+    backgroundColor: "#F1F7EF",
+    borderWidth: 1,
+    borderColor: "#DCE8D8",
+  },
+
+  renameGroupLabel: {
+    marginBottom: 7,
+    color: "#203125",
+    fontSize: 12,
+    fontWeight: "800",
+  },
+
+  renameGroupActions: {
+    flexDirection: "row",
+    gap: 8,
+    marginTop: 9,
+  },
+
+  renameGroupCancel: {
+    flex: 1,
+    minHeight: 40,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  renameGroupCancelText: {
+    color: "#385040",
+    fontSize: 12,
+    fontWeight: "800",
+  },
+
+  renameGroupSave: {
+    flex: 1,
+    minHeight: 40,
+    borderRadius: 12,
+    backgroundColor: "#2F6B45",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  renameGroupSaveText: {
+    color: "#FFFFFF",
+    fontSize: 12,
+    fontWeight: "900",
+  },
+
   currentChip: {
     minHeight: 26,
     paddingHorizontal: 10,
@@ -2937,6 +3240,89 @@ const styles = StyleSheet.create({
   connectionActionNeutralText: {
     color: "#385040",
     fontWeight: "800",
+  },
+
+  transferOwnerPanel: {
+    marginTop: 12,
+    padding: 12,
+    borderRadius: 16,
+    backgroundColor: "#F1F7EF",
+    borderWidth: 1,
+    borderColor: "#DCE8D8",
+  },
+
+  transferOwnerHeading: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 9,
+    marginBottom: 9,
+  },
+
+  transferOwnerHeadingCopy: {
+    flex: 1,
+  },
+
+  transferOwnerTitle: {
+    color: "#203125",
+    fontSize: 13,
+    fontWeight: "800",
+  },
+
+  transferOwnerHint: {
+    marginTop: 2,
+    color: "#6B796E",
+    fontSize: 10,
+    lineHeight: 14,
+  },
+
+  transferOwnerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 9,
+    paddingVertical: 9,
+    borderTopWidth: 1,
+    borderTopColor: "#DFE9DC",
+  },
+
+  transferOwnerAvatar: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: "#DCE7D8",
+  },
+
+  transferOwnerMemberCopy: {
+    flex: 1,
+    minWidth: 0,
+  },
+
+  transferOwnerMemberName: {
+    color: "#203125",
+    fontSize: 12,
+    fontWeight: "800",
+  },
+
+  transferOwnerMemberUsername: {
+    marginTop: 1,
+    color: "#728075",
+    fontSize: 10,
+  },
+
+  transferOwnerButton: {
+    minHeight: 34,
+    paddingHorizontal: 11,
+    borderRadius: 11,
+    backgroundColor: "#DDF4E5",
+    borderWidth: 1,
+    borderColor: "#9ED7B3",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  transferOwnerButtonText: {
+    color: "#17613A",
+    fontSize: 10,
+    fontWeight: "900",
   },
 
   connectionTabs: {
@@ -3150,9 +3536,28 @@ const styles = StyleSheet.create({
   },
 
   personName: {
+    flexShrink: 1,
     color: "#203125",
     fontSize: 14,
     fontWeight: "800",
+  },
+
+  personNameRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 7,
+    maxWidth: "100%",
+  },
+
+  ownerCrown: {
+    width: 25,
+    height: 25,
+    borderRadius: 13,
+    backgroundColor: "#FFF5D6",
+    borderWidth: 1,
+    borderColor: "#F0D58A",
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   personMeta: {
@@ -3379,6 +3784,104 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 14,
+  },
+
+  transferModalCrownWrap: {
+    width: 68,
+    height: 68,
+    borderRadius: 22,
+    backgroundColor: "#FFF5D6",
+    borderWidth: 1,
+    borderColor: "#F0D58A",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 14,
+  },
+
+  transferModalGroupName: {
+    marginTop: 6,
+    color: "#2F6B45",
+    fontSize: 13,
+    fontWeight: "900",
+    textAlign: "center",
+  },
+
+  transferModalMember: {
+    width: "100%",
+    marginTop: 14,
+    padding: 11,
+    borderRadius: 16,
+    backgroundColor: "#F1F7EF",
+    borderWidth: 1,
+    borderColor: "#DCE8D8",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+
+  transferModalAvatar: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: "#DCE7D8",
+  },
+
+  transferModalMemberCopy: {
+    flex: 1,
+    minWidth: 0,
+  },
+
+  transferModalMemberName: {
+    color: "#203125",
+    fontSize: 13,
+    fontWeight: "900",
+  },
+
+  transferModalUsername: {
+    marginTop: 2,
+    color: "#6B796E",
+    fontSize: 11,
+  },
+
+  transferModalActions: {
+    width: "100%",
+    flexDirection: "row",
+    gap: 9,
+  },
+
+  transferModalCancel: {
+    flex: 1,
+    minHeight: 46,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  transferModalCancelText: {
+    color: "#385040",
+    fontSize: 12,
+    fontWeight: "900",
+  },
+
+  transferModalConfirm: {
+    flex: 1.35,
+    minHeight: 46,
+    borderRadius: 14,
+    backgroundColor: "#2F6B45",
+    flexDirection: "row",
+    gap: 7,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  transferModalConfirmText: {
+    color: "#FFFFFF",
+    fontSize: 12,
+    fontWeight: "900",
+  },
+
+  transferModalButtonDisabled: {
+    opacity: 0.58,
   },
 
   modalTitle: {

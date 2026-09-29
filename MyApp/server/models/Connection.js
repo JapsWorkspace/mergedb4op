@@ -1,6 +1,12 @@
 const mongoose = require('mongoose');
 
 const connectionSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    trim: true,
+    maxlength: 50,
+    default: ""
+  },
   code: {
     type: String,
     unique: true,
