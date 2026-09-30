@@ -1,6 +1,10 @@
 const mongoose = require("mongoose");
 const PublicSite = require("../models/PublicSite");
 const Notification = require("../models/Notification");
+const ReliefDistributionRecord = require("../models/ReliefDistributionRecord");
+const Donation = require("../models/Donation");
+const InventoryItem = require("../models/InventoryItem");
+const Incident = require("../models/Incident");
 const cloudinary = require("../config/cloudinary");
 const createNotification = require("../utils/createNotification");
 
@@ -370,6 +374,135 @@ const getPublicSite = async (req, res) => {
   }
 };
 
+const getPublicOperations = async (req, res) => {
+  try {
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const publicIncidentFilter = {
+      $or: [
+        { isPublic: true },
+        { approvedByMDRRMO: true },
+        { forceApproved: true },
+      ],
+    };
+
+    const [distributionGroups, donationGroups, activeIncidents, resolvedIncidents, resourceCategories] =
+      await Promise.all([
+        ReliefDistributionRecord.aggregate([
+          { $match: { distributionStatus: "completed", isArchived: false } },
+          {
+            $group: {
+              _id: {
+                reliefRequestId: "$reliefRequestId",
+                barangayName: "$barangayName",
+                siteLabel: "$siteLabel",
+                evacuationCenterName: "$evacuationCenterName",
+                distributionDate: "$distributionDate",
+              },
+              familiesServed: { $sum: 1 },
+              lastUpdated: { $max: "$updatedAt" },
+            },
+          },
+          { $sort: { lastUpdated: -1 } },
+          { $limit: 6 },
+        ]),
+        Donation.aggregate([
+          {
+            $match: {
+              status: { $in: ["received", "accepted", "delivered"] },
+              createdAt: { $gte: thirtyDaysAgo },
+            },
+          },
+          {
+            $group: {
+              _id: "$inventoryType",
+              records: { $sum: 1 },
+              lastUpdated: { $max: { $ifNull: ["$receivedAt", "$updatedAt"] } },
+            },
+          },
+        ]),
+        Incident.countDocuments({
+          ...publicIncidentFilter,
+          status: { $nin: ["resolved", "completed", "closed"] },
+        }),
+        Incident.countDocuments({
+          ...publicIncidentFilter,
+          status: { $in: ["resolved", "completed", "closed"] },
+          updatedAt: { $gte: thirtyDaysAgo },
+        }),
+        InventoryItem.distinct("category", {
+          isArchive: false,
+          type: { $in: ["goods", "appliance"] },
+          quantity: { $gt: 0 },
+          category: { $nin: [null, ""] },
+        }),
+      ]);
+
+    const donationRecords = donationGroups.reduce(
+      (total, item) => total + Number(item?.records || 0),
+      0
+    );
+    const latestDonationUpdate = donationGroups.reduce((latest, item) => {
+      const value = item?.lastUpdated ? new Date(item.lastUpdated) : null;
+      return value && (!latest || value > latest) ? value : latest;
+    }, null);
+    const familiesServed = distributionGroups.reduce(
+      (total, item) => total + Number(item?.familiesServed || 0),
+      0
+    );
+
+    const activities = distributionGroups.map((item) => ({
+      id: `distribution-${String(item?._id?.reliefRequestId || item?.lastUpdated || "")}`,
+      category: "Relief Distribution",
+      title: `Relief assistance completed in ${item?._id?.barangayName || "Jaen"}`,
+      location:
+        item?._id?.siteLabel ||
+        item?._id?.evacuationCenterName ||
+        item?._id?.barangayName ||
+        "Jaen",
+      status: "Completed",
+      summary: `${Number(item?.familiesServed || 0).toLocaleString()} family record${
+        Number(item?.familiesServed || 0) === 1 ? "" : "s"
+      } served.`,
+      updatedAt: item?.lastUpdated || item?._id?.distributionDate || null,
+    }));
+
+    if (donationRecords > 0) {
+      activities.push({
+        id: "donations-received",
+        category: "Donation Activity",
+        title: "Community donations received",
+        location: "Jaen MDRRMO",
+        status: "Received",
+        summary: `${donationRecords.toLocaleString()} verified donation record${
+          donationRecords === 1 ? "" : "s"
+        } received during the last 30 days.`,
+        updatedAt: latestDonationUpdate,
+      });
+    }
+
+    activities.sort(
+      (a, b) => new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime()
+    );
+
+    return res.status(200).json({
+      generatedAt: new Date(),
+      summary: {
+        activePublicIncidents: activeIncidents,
+        resolvedLast30Days: resolvedIncidents,
+        familiesServed,
+        donationRecordsLast30Days: donationRecords,
+        readyResourceCategories: resourceCategories.filter(Boolean).length,
+      },
+      activities: activities.slice(0, 6),
+    });
+  } catch (error) {
+    console.error("getPublicOperations error:", error);
+    return res.status(500).json({
+      message: "Failed to load public MDRRMO operations.",
+    });
+  }
+};
+
 const updatePublicSite = async (req, res) => {
   try {
     const payload = sanitizePayload(req.body || {});
@@ -704,6 +837,7 @@ const updatePublicSiteHeroImageCaption = async (req, res) => {
 
 module.exports = {
   getPublicSite,
+  getPublicOperations,
   updatePublicSite,
   resetPublicSite,
   updateIncidentFeedMode,

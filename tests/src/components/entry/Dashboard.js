@@ -367,6 +367,13 @@ export default function Dashboard() {
   const [publicIncidents, setPublicIncidents] = useState([]);
   const [incidentsLoading, setIncidentsLoading] = useState(true);
   const [incidentsError, setIncidentsError] = useState("");
+  const [publicOperations, setPublicOperations] = useState({
+    summary: {},
+    activities: [],
+    generatedAt: null,
+  });
+  const [operationsLoading, setOperationsLoading] = useState(true);
+  const [operationsError, setOperationsError] = useState("");
   const [activeTwinView, setActiveTwinView] = useState("");
 
   const observerRef = useRef(null);
@@ -1015,6 +1022,29 @@ export default function Dashboard() {
     }
   }
 
+  async function fetchPublicOperations() {
+    setOperationsLoading(true);
+    setOperationsError("");
+
+    try {
+      const res = await fetch(`${BASE_URL}/api/public-site/operations`);
+      if (!res.ok) throw new Error("Failed to load MDRRMO operations.");
+
+      const data = await res.json();
+      setPublicOperations({
+        summary: data?.summary || {},
+        activities: Array.isArray(data?.activities) ? data.activities : [],
+        generatedAt: data?.generatedAt || null,
+      });
+    } catch (err) {
+      console.error("fetchPublicOperations error:", err);
+      setOperationsError("MDRRMO operations are unavailable right now.");
+      setPublicOperations({ summary: {}, activities: [], generatedAt: null });
+    } finally {
+      setOperationsLoading(false);
+    }
+  }
+
   useEffect(() => {
     loadPublicContent();
     detectRole();
@@ -1023,6 +1053,7 @@ export default function Dashboard() {
     fetchPublicBarangayBounds();
     fetchHazardLayers();
     fetchPublicIncidents();
+    fetchPublicOperations();
   }, [fetchHazardLayers, fetchPublicBarangayBounds, fetchPublicPlaces]);
 
   function updateDraft(path, value) {
@@ -2505,6 +2536,86 @@ export default function Dashboard() {
                   ))}
                 </div>
               </section>
+            </section>
+
+            <section className="public-operations-section" id="operations">
+              <div className="landing-section-head landing-section-head-spread">
+                <div>
+                  <span className="section-kicker">From Jaen MDRRMO</span>
+                  <h2>MDRRMO Operations and Activities</h2>
+                  <p>
+                    Public-safe summaries of response, relief, donation, and resource-readiness
+                    records maintained by the MDRRMO.
+                  </p>
+                </div>
+
+                <div className="public-operations-updated">
+                  {publicOperations.generatedAt
+                    ? `Updated ${formatDateTime(publicOperations.generatedAt)}`
+                    : "Live operational summary"}
+                </div>
+              </div>
+
+              {operationsLoading ? (
+                <div className="panel-empty">Loading MDRRMO operations...</div>
+              ) : operationsError ? (
+                <div className="panel-empty error">{operationsError}</div>
+              ) : (
+                <>
+                  <div className="public-operations-summary">
+                    <article>
+                      <FaBell />
+                      <span>Active public incidents</span>
+                      <strong>{formatNumber(publicOperations.summary.activePublicIncidents)}</strong>
+                    </article>
+                    <article>
+                      <FaCheckCircle />
+                      <span>Resolved in 30 days</span>
+                      <strong>{formatNumber(publicOperations.summary.resolvedLast30Days)}</strong>
+                    </article>
+                    <article>
+                      <FaHome />
+                      <span>Families served</span>
+                      <strong>{formatNumber(publicOperations.summary.familiesServed)}</strong>
+                    </article>
+                    <article>
+                      <FaShieldAlt />
+                      <span>Verified donations</span>
+                      <strong>{formatNumber(publicOperations.summary.donationRecordsLast30Days)}</strong>
+                    </article>
+                    <article>
+                      <FaMapMarkedAlt />
+                      <span>Ready resource categories</span>
+                      <strong>{formatNumber(publicOperations.summary.readyResourceCategories)}</strong>
+                    </article>
+                  </div>
+
+                  <div className="public-operations-feed">
+                    {(publicOperations.activities || []).length ? (
+                      publicOperations.activities.map((activity) => (
+                        <article className="public-operation-card" key={activity.id}>
+                          <div className="public-operation-card-top">
+                            <span>{activity.category}</span>
+                            <b>{activity.status}</b>
+                          </div>
+                          <h3>{activity.title}</h3>
+                          <p>{activity.summary}</p>
+                          <div className="public-operation-meta">
+                            <span>{activity.location || "Jaen"}</span>
+                            <time dateTime={activity.updatedAt || undefined}>
+                              {activity.updatedAt ? formatDateTime(activity.updatedAt) : "Recently updated"}
+                            </time>
+                          </div>
+                        </article>
+                      ))
+                    ) : (
+                      <div className="public-operations-empty">
+                        No public operational activity has been posted yet.
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
             </section>
           </div>
 

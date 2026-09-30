@@ -13,6 +13,7 @@ const { uploadPublicSiteImage } = require("../middleware/upload");
 ========================= */
 
 router.get("/", controller.getPublicSite);
+router.get("/operations", controller.getPublicOperations);
 
 /* =========================
    ADMIN / DRRMO EDIT
