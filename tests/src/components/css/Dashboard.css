@@ -3365,11 +3365,35 @@
   .dashboard-header-shell {
     flex-direction: column;
     align-items: stretch;
+    justify-content: flex-start;
+    gap: 10px;
+    min-height: 0;
+    height: auto;
   }
 
   .dashboard-nav-shell {
-    flex-direction: column;
-    align-items: stretch;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+    min-height: 0;
+    height: auto;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .dashboard-nav-shell .nav-links,
+  .dashboard-nav-shell .header-twin-links {
+    width: auto;
+    flex: 0 0 auto;
+    flex-wrap: nowrap;
+  }
+
+  .dashboard-nav-shell .nav-link-btn {
+    flex: 0 0 auto;
+    min-width: 112px;
   }
 
   .header-right {
