@@ -684,12 +684,6 @@ const leaveConnection = async (req, res) => {
       return res.status(404).json({ message: "Connection not found" });
     }
 
-    if (idsMatch(connection.creator, userId)) {
-      return res.status(400).json({
-        message: "Creator cannot leave their own connection",
-      });
-    }
-
     const leavingUser = await UserModel.findById(userId).select(
       "fname lname username avatar"
     );
@@ -699,13 +693,46 @@ const leaveConnection = async (req, res) => {
       leavingUser?.username ||
       "A member";
 
+    const ownerIsLeaving = idsMatch(connection.creator, userId);
+    const membersAfterLeaving = Array.isArray(connection.members)
+      ? connection.members.filter((id) => !idsMatch(id, userId))
+      : [];
+
+    if (ownerIsLeaving && membersAfterLeaving.length === 0) {
+      await ConnectionModel.findByIdAndDelete(connectionId);
+      await UserModel.updateMany(
+        { connections: connectionId },
+        { $pull: { connections: connectionId } }
+      );
+
+      return res.json({
+        message: "You left the group. The empty group was deleted.",
+        deleted: true,
+      });
+    }
+
+    let newOwner = null;
+    if (ownerIsLeaving) {
+      newOwner = await UserModel.findById(membersAfterLeaving[0]).select(
+        "fname lname username avatar"
+      );
+
+      if (!newOwner) {
+        return res.status(409).json({
+          message: "A new owner could not be selected. Please transfer ownership first.",
+        });
+      }
+
+      connection.creator = newOwner._id;
+    }
+
     const remainingMemberIds = Array.isArray(connection.members)
       ? connection.members.filter(
           (id) => !idsMatch(id, userId) && !idsMatch(id, connection.creator)
         )
       : [];
 
-    connection.members = connection.members.filter((id) => !idsMatch(id, userId));
+    connection.members = membersAfterLeaving;
     connection.pendingMembers = connection.pendingMembers.filter(
       (id) => !idsMatch(id, userId)
     );
@@ -724,8 +751,13 @@ const leaveConnection = async (req, res) => {
     await Promise.all(
       notifyTargets.map((targetUserId) =>
         addNotification(targetUserId, {
-          type: "CONNECTION_LEFT",
-          message: `${leavingName} left connection ${connection.code}.`,
+          type: ownerIsLeaving
+            ? "CONNECTION_OWNERSHIP_TRANSFERRED"
+            : "CONNECTION_LEFT",
+          message:
+            ownerIsLeaving && idsMatch(targetUserId, newOwner?._id)
+              ? `${leavingName} left ${connection.name || connection.code}. You are now the group owner.`
+              : `${leavingName} left ${connection.name || connection.code}.`,
           connectionId: connection._id,
           actorUserId: leavingUser?._id || null,
           actorName: leavingName,
@@ -737,7 +769,12 @@ const leaveConnection = async (req, res) => {
       )
     );
 
-    return res.json({ message: "You have left the connection" });
+    return res.json({
+      message: ownerIsLeaving
+        ? `You left the group. Ownership was passed to ${newOwner?.username || "another member"}.`
+        : "You have left the connection",
+      newOwnerId: newOwner?._id || null,
+    });
   } catch (err) {
     console.error("Leave connection error:", err);
     return res.status(500).json({ message: "Server error" });

@@ -1713,16 +1713,38 @@ export default function SafetyMark() {
     );
   };
 
-  const handleLeaveConnection = async (connectionId) => {
+  const handleLeaveConnection = (connectionId, isOwner = false, memberCount = 0) => {
     if (!user?._id) return;
-    try {
-      const res = await api.delete(`/connection/leave/${user._id}/${connectionId}`);
-      await refreshAll();
-      await refreshNotifications();
-      Alert.alert("Connection Updated", res?.data?.message || "You left the connection.");
-    } catch (err) {
-      Alert.alert("Error", "Failed to leave connection.");
-    }
+
+    const ownerMessage =
+      memberCount > 1
+        ? "If you leave, ownership will automatically pass to another member. Do you want to continue?"
+        : "You are the only member. Leaving will also delete this empty group. Do you want to continue?";
+
+    Alert.alert(
+      "Leave Group",
+      isOwner ? ownerMessage : "Are you sure you want to leave this group?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Leave",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              const res = await api.delete(`/connection/leave/${user._id}/${connectionId}`);
+              await refreshAll();
+              await refreshNotifications();
+              Alert.alert("Group Updated", res?.data?.message || "You left the group.");
+            } catch (err) {
+              Alert.alert(
+                "Unable to Leave",
+                err?.response?.data?.message || "Failed to leave the group."
+              );
+            }
+          },
+        },
+      ]
+    );
   };
 
   const handleDeleteConnection = (connectionId) => {
@@ -1760,7 +1782,7 @@ export default function SafetyMark() {
     Alert.alert("Remove Member", `Remove ${username} from this connection?`, [
       { text: "Cancel", style: "cancel" },
       {
-        text: "Kick",
+        text: "Remove",
         style: "destructive",
         onPress: async () => {
           try {
@@ -2187,17 +2209,35 @@ export default function SafetyMark() {
                                 : "Outside the boundary of Jaen"}
                             </Text>
                           </View>
-                          <View style={styles.personAvatarWrap}>
-                            <Image source={{ uri: member.avatar }} style={styles.personAvatar} />
-                            <View
-                              style={[
-                                styles.personAvatarDot,
-                                {
-                                  backgroundColor: member.safetyColor,
-                                  borderColor: theme.card,
-                                },
-                              ]}
-                            />
+                          <View style={styles.personActions}>
+                            {member.canKick && (
+                              <Pressable
+                                style={styles.personMenuButton}
+                                onPress={() =>
+                                  handleKickMember(
+                                    selectedConnection.id,
+                                    member.id,
+                                    member.username
+                                  )
+                                }
+                                accessibilityRole="button"
+                                accessibilityLabel={`Open actions for ${member.username}`}
+                              >
+                                <Ionicons name="ellipsis-vertical" size={20} color="#526358" />
+                              </Pressable>
+                            )}
+                            <View style={styles.personAvatarWrap}>
+                              <Image source={{ uri: member.avatar }} style={styles.personAvatar} />
+                              <View
+                                style={[
+                                  styles.personAvatarDot,
+                                  {
+                                    backgroundColor: member.safetyColor,
+                                    borderColor: theme.card,
+                                  },
+                                ]}
+                              />
+                            </View>
                           </View>
                         </View>
                       ))}
@@ -2302,6 +2342,18 @@ export default function SafetyMark() {
                                 <Text style={[styles.connectionActionNeutralText, themed.text]}>Rename</Text>
                               </Pressable>
                               <Pressable
+                                style={[styles.connectionActionNeutral, themed.secondaryButton]}
+                                onPress={() =>
+                                  handleLeaveConnection(
+                                    connection.id,
+                                    true,
+                                    connection.members.length
+                                  )
+                                }
+                              >
+                                <Text style={[styles.connectionActionNeutralText, themed.text]}>Leave</Text>
+                              </Pressable>
+                              <Pressable
                                 style={styles.connectionActionDanger}
                                 onPress={() => handleDeleteConnection(connection.id)}
                               >
@@ -2311,7 +2363,13 @@ export default function SafetyMark() {
                           ) : (
                             <Pressable
                               style={[styles.connectionActionNeutral, themed.secondaryButton]}
-                              onPress={() => handleLeaveConnection(connection.id)}
+                              onPress={() =>
+                                handleLeaveConnection(
+                                  connection.id,
+                                  false,
+                                  connection.members.length
+                                )
+                              }
                             >
                               <Text style={[styles.connectionActionNeutralText, themed.text]}>Leave</Text>
                             </Pressable>
@@ -3500,6 +3558,23 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderWidth: 1,
     borderColor: "#DFE9DC",
+  },
+
+  personActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+
+  personMenuButton: {
+    width: 36,
+    height: 36,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 18,
+    backgroundColor: "#EEF4EC",
+    borderWidth: 1,
+    borderColor: "#D7E4D4",
   },
 
   personAvatarWrap: {
